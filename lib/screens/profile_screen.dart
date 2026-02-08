@@ -1,0 +1,498 @@
+import 'package:flutter/material.dart';
+import '../globals.dart';
+import '../services/google_auth_service.dart';
+import 'welcome_screen.dart';
+import 'follow_us_screen.dart';
+import 'settings_screen.dart';
+import 'investment_ideas_screen.dart';
+import 'saving_ideas_screen.dart';
+import 'package:share_plus/share_plus.dart';
+import '../data/refresh_totals.dart';
+
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    await refreshTotals();
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F8FB),
+      endDrawer: _profileDrawer(context),
+      drawerEnableOpenDragGesture: false,
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ===== HEADER =====
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0A33FF), Color(0xFF4B6CFF)],
+                ),
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(34)),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: Builder(
+                        builder: (ctx) => IconButton(
+                          icon: const Icon(Icons.more_vert,
+                              color: Colors.white),
+                          onPressed: () {
+                            Scaffold.of(ctx).openEndDrawer();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.amber,
+                    child: Text(
+                      loggedInUserName.isNotEmpty
+                          ? loggedInUserName[0].toUpperCase()
+                          : 'U',
+                      style: const TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    loggedInUserName.isNotEmpty
+                        ? loggedInUserName
+                        : 'User',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    loggedInUserEmail,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 26),
+
+            _sectionTitle('👤 Account Details'),
+            _card(
+              Column(
+                children: [
+                  _infoRow('Name', loggedInUserName),
+                  const Divider(height: 22),
+                  _infoRow('Email', loggedInUserEmail),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 26),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.trending_up),
+                  label: const Text(
+                    'View Investment Ideas',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const InvestmentIdeasScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            _sectionTitle('💰 Financial Summary'),
+            const SizedBox(height: 14),
+            _financeCards(),
+            const SizedBox(height: 16),
+
+            // 🔥 UPDATED SPENDING ALERT UI
+            _spendingAlert(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ===== FINANCE CARDS =====
+  Widget _financeCards() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _miniCard('Income', totalCredit, Colors.green),
+          const SizedBox(width: 14),
+          _miniCard('Expense', totalDebit, Colors.red),
+          const SizedBox(width: 14),
+          _miniCard('Balance', totalCredit - totalDebit, Colors.blue),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniCard(String title, double value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.18),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.account_balance_wallet, color: color),
+            const SizedBox(height: 12),
+            Text(title,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: 13)),
+            const SizedBox(height: 6),
+            Text(
+              '₹${value.toStringAsFixed(0)}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ===== 🔥 UPDATED SPENDING ALERT =====
+  Widget _spendingAlert(BuildContext context) {
+    if (totalCredit <= 0) return const SizedBox.shrink();
+
+    Color color;
+    IconData icon;
+    String title, desc, btn;
+    VoidCallback action;
+
+    if (totalDebit > totalCredit) {
+      color = Colors.red;
+      icon = Icons.warning_rounded;
+      title = 'Spending Alert';
+      desc = 'Your expenses are higher than your income.';
+      btn = 'View Saving Ideas';
+      action = () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SavingIdeasScreen()),
+          );
+    } else if (isHighSpending) {
+      color = Colors.orange;
+      icon = Icons.trending_up;
+      title = 'High Spending';
+      desc = 'You are close to your spending limit.';
+      btn = 'Reduce Expenses';
+      action = () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SavingIdeasScreen()),
+          );
+    } else {
+      color = Colors.green;
+      icon = Icons.check_circle;
+      title = 'Good Job';
+      desc = 'Your spending is under control.';
+      btn = 'Explore Investments';
+      action = () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const InvestmentIdeasScreen()),
+          );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.25)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 6,
+            height: 140,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius:
+                  const BorderRadius.horizontal(left: Radius.circular(20)),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(icon, color: color, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    desc,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: color,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: action,
+                      child: Text(
+                        btn,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===== CARD =====
+  Widget _card(Widget child) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  // ===== DRAWER =====
+  Widget _profileDrawer(BuildContext context) {
+    return Drawer(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 50, 20, 24),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0A33FF),
+              borderRadius:
+                  BorderRadius.only(topRight: Radius.circular(24)),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 26,
+                  backgroundColor: Colors.amber,
+                  child: Text(
+                    loggedInUserName.isNotEmpty
+                        ? loggedInUserName[0].toUpperCase()
+                        : 'A',
+                    style: const TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      loggedInUserName.isNotEmpty
+                          ? loggedInUserName
+                          : 'User',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      loggedInUserEmail.isNotEmpty
+                          ? loggedInUserEmail
+                          : 'user@email.com',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          _drawerTile(Icons.person, 'Invite friends', () {
+            Navigator.pop(context);
+            Share.share(
+                'Hey! I am using BudgetBee to track my expenses.');
+          }),
+
+          const Divider(height: 1),
+
+          _drawerTile(Icons.favorite, 'Follow us', () {
+            Navigator.pop(context);
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const FollowUsScreen()));
+          }, Colors.red),
+
+          const Divider(height: 1),
+
+          _drawerTile(Icons.settings, 'Setting', () {
+            Navigator.pop(context);
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()));
+          }, Colors.blue),
+
+          const Divider(height: 1),
+
+          _drawerTile(Icons.logout, 'Log out', () async {
+            Navigator.pop(context);
+            await GoogleAuthService.signOut();
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+              (_) => false,
+            );
+          }, Colors.orange),
+        ],
+      ),
+    );
+  }
+
+  Widget _drawerTile(
+    IconData icon,
+    String text,
+    VoidCallback onTap, [
+    Color iconColor = Colors.black87,
+  ]) {
+    return ListTile(
+      leading: Icon(icon, color: iconColor),
+      title: Text(text),
+      onTap: onTap,
+    );
+  }
+
+  static Widget _sectionTitle(String title) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(title,
+            style:
+                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      );
+
+  static Widget _infoRow(String label, String value) => Row(
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text('$label:',
+                style: const TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      );
+}
