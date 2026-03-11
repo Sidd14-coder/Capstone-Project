@@ -52,3 +52,7 @@ Map<DateTime, double> dailyCreditMap = {};
 // Stored after successful registration (no backend, UI-level auth)
 String registeredEmail = '';
 String registeredPassword = '';
+
+Map<String, double> bankBalances = {}; 
+Map<String, String> bankAccounts = {}; 
+Map<String, int> bankLastSmsTime = {};

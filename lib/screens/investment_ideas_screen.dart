@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class InvestmentIdeasScreen extends StatelessWidget {
   const InvestmentIdeasScreen({super.key});
@@ -54,9 +55,7 @@ class InvestmentIdeasScreen extends StatelessWidget {
           ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             children: const [
-              // ===== INSIGHT HEADER =====
               _InsightHeader(),
-
               SizedBox(height: 16),
 
               _IdeaCard(
@@ -109,7 +108,10 @@ class InvestmentIdeasScreen extends StatelessWidget {
 
               SizedBox(height: 8),
 
-              // ===== FOOTER CTA =====
+              // ===== NEW SIP SECTION =====
+              _SipCalculatorSection(),
+
+              // ===== FOOTER =====
               _FooterCTA(),
             ],
           ),
@@ -119,9 +121,7 @@ class InvestmentIdeasScreen extends StatelessWidget {
   }
 }
 
-// =======================================================
 // ================= INSIGHT HEADER ======================
-// =======================================================
 class _InsightHeader extends StatelessWidget {
   const _InsightHeader();
 
@@ -148,10 +148,7 @@ class _InsightHeader extends StatelessWidget {
           Expanded(
             child: Text(
               'Start investing early. Even small amounts invested consistently can grow significantly over time.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.black87),
             ),
           ),
         ],
@@ -160,9 +157,7 @@ class _InsightHeader extends StatelessWidget {
   }
 }
 
-// =======================================================
-// =================== IDEA CARD =========================
-// =======================================================
+// ================= IDEA CARD ===========================
 class _IdeaCard extends StatelessWidget {
   final String title;
   final String description;
@@ -186,7 +181,7 @@ class _IdeaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(20),
-      onTap: () {}, // future detail screen
+      onTap: () {},
       child: Container(
         margin: const EdgeInsets.only(bottom: 18),
         decoration: BoxDecoration(
@@ -204,8 +199,6 @@ class _IdeaCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            // ===== ICON =====
             Container(
               height: 52,
               width: 52,
@@ -219,10 +212,7 @@ class _IdeaCard extends StatelessWidget {
               ),
               child: Icon(icon, color: Colors.white, size: 26),
             ),
-
             const SizedBox(width: 16),
-
-            // ===== CONTENT =====
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,30 +223,20 @@ class _IdeaCard extends StatelessWidget {
                         child: Text(
                           title,
                           style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                       _RiskBadge(risk: risk),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    description,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                    ),
-                  ),
+                  Text(description,
+                      style:
+                          const TextStyle(fontSize: 14, color: Colors.black87)),
                   const SizedBox(height: 8),
-                  Text(
-                    reason,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
+                  Text(reason,
+                      style:
+                          const TextStyle(fontSize: 12, color: Colors.grey)),
                   if (bestForStudents) ...[
                     const SizedBox(height: 10),
                     const _StudentTag(),
@@ -271,9 +251,7 @@ class _IdeaCard extends StatelessWidget {
   }
 }
 
-// =======================================================
-// ================== RISK BADGE =========================
-// =======================================================
+// ================= RISK BADGE ==========================
 class _RiskBadge extends StatelessWidget {
   final String risk;
   const _RiskBadge({required this.risk});
@@ -284,7 +262,9 @@ class _RiskBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isLow ? Colors.green.withOpacity(0.15) : Colors.orange.withOpacity(0.15),
+        color: isLow
+            ? Colors.green.withOpacity(0.15)
+            : Colors.orange.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -299,9 +279,7 @@ class _RiskBadge extends StatelessWidget {
   }
 }
 
-// =======================================================
 // ================= STUDENT TAG =========================
-// =======================================================
 class _StudentTag extends StatelessWidget {
   const _StudentTag();
 
@@ -314,19 +292,69 @@ class _StudentTag extends StatelessWidget {
         Text(
           'Best for Students',
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Colors.blue,
-          ),
+              fontSize: 12, fontWeight: FontWeight.w600, color: Colors.blue),
         ),
       ],
     );
   }
 }
 
-// =======================================================
-// ================= FOOTER CTA ==========================
-// =======================================================
+// ================= SIP CALCULATOR SECTION ==============
+class _SipCalculatorSection extends StatelessWidget {
+  const _SipCalculatorSection();
+
+  Future<void> _openSipCalculator() async {
+    final Uri url =
+        Uri.parse('https://groww.in/calculators/sip-calculator');
+
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw 'Could not open SIP Calculator';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: _openSipCalculator,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 18),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0A33FF), Color(0xFF4B6CFF)],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: const [
+            Icon(Icons.calculate, color: Colors.white, size: 28),
+            SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                'SIP Investment Calculator',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ================= FOOTER ==============================
 class _FooterCTA extends StatelessWidget {
   const _FooterCTA();
 

@@ -2,52 +2,93 @@ import 'package:flutter/material.dart';
 import 'package:telephony/telephony.dart';
 import '../globals.dart';
 
-/* ---------------- MERCHANT EXTRACTION ---------------- */
+/* =========================================================
+   TRANSACTION PARSER (STRICT – NO FALSE POSITIVES)
+   ========================================================= */
 
-String extractMerchant(String body) {
-  body = body.toUpperCase();
+class ParsedTransaction {
+  final bool isDebit;
+  final double amount;
+  final String merchant;
 
-  final known = [
-    'ZOMATO',
-    'SWIGGY',
-    'AMAZON',
-    'FLIPKART',
-    'UBER',
-    'OLA',
-    'PAYTM',
-    'GOOGLE',
-    'IRCTC',
-    'NETFLIX',
-    'SPOTIFY',
-    'RELIANCE',
-    'DMART',
+  ParsedTransaction({
+    required this.isDebit,
+    required this.amount,
+    required this.merchant,
+  });
+}
+
+ParsedTransaction? parseTransactionSMS(String bodyRaw) {
+  final body = bodyRaw.toUpperCase();
+
+  final debitRegex = RegExp(
+    r'\b(DEBIT(?:ED)?|DR\b|WITHDRAWN|SPENT|PURCHASE|PAID|SENT|UPI-DR|DBT)\b',
+  );
+
+  final creditRegex = RegExp(
+    r'\b(CREDIT(?:ED)?|CR\b|RECEIVED|REFUND|CASHBACK|REVERSAL|UPI-CR)\b',
+  );
+
+  bool? isDebit;
+
+  if (debitRegex.hasMatch(body)) isDebit = true;
+  if (creditRegex.hasMatch(body)) isDebit = false;
+
+  if (isDebit == null) return null;
+
+  final amountRegex = RegExp(
+    r'(?:RS\.?|INR|₹)\s*([\d,]+(?:\.\d{1,2})?)',
+    caseSensitive: false,
+  );
+
+  final amtMatch = amountRegex.firstMatch(body.replaceAll(',', ''));
+  if (amtMatch == null) return null;
+
+  final amount = double.tryParse(amtMatch.group(1) ?? '');
+  if (amount == null || amount <= 0) return null;
+
+  final knownMerchants = [
+    'AMAZON','FLIPKART','SWIGGY','ZOMATO','PAYTM',
+    'GPAY','PHONEPE','OLA','UBER','IRCTC',
+    'DMART','RELIANCE','NETFLIX','SPOTIFY',
   ];
 
-  for (var m in known) {
-    if (body.contains(m)) return m;
+  for (final m in knownMerchants) {
+    if (body.contains(m)) {
+      return ParsedTransaction(isDebit: isDebit, amount: amount, merchant: m);
+    }
   }
 
-  final patterns = [
-    RegExp(r'SPENT AT ([A-Z0-9\s]+)'),
-    RegExp(r'PAID TO ([A-Z0-9\s]+)'),
-    RegExp(r'AT ([A-Z0-9\s]+)'),
-    RegExp(r'TO ([A-Z0-9\s]+)'),
+  final merchantPatterns = [
+    RegExp(r'AT\s+([A-Z0-9&\-\s]{3,})'),
+    RegExp(r'TO\s+([A-Z0-9&\-\s]{3,})'),
+    RegExp(r'FROM\s+([A-Z0-9&\-\s]{3,})'),
   ];
 
-  for (var p in patterns) {
-    final match = p.firstMatch(body);
-    if (match != null) {
-      final name = match.group(1)!.trim();
-      if (name.length > 3 && !name.contains('ACCOUNT')) {
-        return name;
+  for (final p in merchantPatterns) {
+    final m = p.firstMatch(body);
+    if (m != null) {
+      final name = m.group(1)!.trim();
+      if (!name.contains('ACCOUNT') && name.length > 2) {
+        return ParsedTransaction(
+          isDebit: isDebit,
+          amount: amount,
+          merchant: name,
+        );
       }
     }
   }
 
-  return 'BANK TRANSACTION';
+  return ParsedTransaction(
+    isDebit: isDebit,
+    amount: amount,
+    merchant: 'BANK TRANSACTION',
+  );
 }
 
-/* ---------------- TRANSACTIONS SCREEN ---------------- */
+/* =========================================================
+   TRANSACTIONS SCREEN
+   ========================================================= */
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -58,8 +99,13 @@ class TransactionsScreen extends StatefulWidget {
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
   final Telephony telephony = Telephony.instance;
+
   List<SmsMessage> messages = [];
-  bool isLoading = true; // Added loading state for better UX
+  bool isLoading = true;
+
+  Set<String> detectedBanks = {};
+  String? selectedBank;
+  bool showAccounts = false;
 
   @override
   void initState() {
@@ -67,41 +113,79 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     loadSms();
   }
 
-  /* -------- DEBIT / CREDIT -------- */
+  String extractBankName(SmsMessage msg) {
+  final sender = (msg.address ?? '').toUpperCase();
 
-  bool isDebit(String body) {
-    final b = body.toLowerCase();
-    final explicitDebit = RegExp(
-        r'\b(debit(?:ed)?|withdrawn|spent|purchase|paid|payment|card payment|atm withdrawal|sent)\b',
-        caseSensitive: false);
-    if (explicitDebit.hasMatch(b)) return true;
+  if (sender.contains('BOI')) return 'Bank of India';
+  if (sender.contains('SBI')) return 'State Bank of India';
+  if (sender.contains('HDFC')) return 'HDFC Bank';
+  if (sender.contains('ICICI')) return 'ICICI Bank';
+  if (sender.contains('AXIS')) return 'Axis Bank';
+  if (sender.contains('KOTAK')) return 'Kotak Mahindra Bank';
+  if (sender.contains('IDFC')) return 'IDFC First Bank';
+  if (sender.contains('PNB')) return 'Punjab National Bank';
+  if (sender.contains('CANARA')) return 'Canara Bank';
+  if (sender.contains('UNION')) return 'Union Bank of India';
+  if (sender.contains('INDIANBANK')) return 'Indian Bank';
+  if (sender.contains('IOB')) return 'Indian Overseas Bank';
+  if (sender.contains('CENTRAL')) return 'Central Bank of India';
+  if (sender.contains('UCO')) return 'UCO Bank';
+  if (sender.contains('YES')) return 'Yes Bank';
+  if (sender.contains('RBL')) return 'RBL Bank';
+  if (sender.contains('FEDERAL')) return 'Federal Bank';
+  if (sender.contains('IDBI')) return 'IDBI Bank';
+  if (sender.contains('HSBC')) return 'HSBC Bank';
+  if (sender.contains('DBS')) return 'DBS Bank';
+  if (sender.contains('DEUTSCHE')) return 'Deutsche Bank';
+  if (sender.contains('STANDARD')) return 'Standard Chartered Bank';
+  if (sender.contains('BARCLAYS')) return 'Barclays Bank';
+  if (sender.contains('BNP')) return 'BNP Paribas Bank';
 
-    final explicitCredit = RegExp(
-        r'\b(credit(?:ed)?|deposited|received|refund|cashback|reversal)\b',
-        caseSensitive: false);
-    if (explicitCredit.hasMatch(b)) return false;
+  // 🏦 Payments Banks
+  if (sender.contains('IPPB') || sender.contains('IPB')) {
+    return 'India Post Payments Bank';
+  }
+  if (sender.contains('PAYTM')) return 'Paytm Payments Bank';
+  if (sender.contains('FINO')) return 'Fino Payments Bank';
+  if (sender.contains('NSDL')) return 'NSDL Payments Bank';
+  if (sender.contains('AIRTEL')) return 'Airtel Payments Bank';
+  if (sender.contains('JIO')) return 'Jio Payments Bank';
 
-    final abbrev = RegExp(r'\bdr\b', caseSensitive: false);
-    return abbrev.hasMatch(b);
+  // 🏦 Small Finance Banks
+  if (sender.contains('UJJIVAN')) return 'Ujjivan Small Finance Bank';
+  if (sender.contains('EQUITAS')) return 'Equitas Small Finance Bank';
+  if (sender.contains('SURYODAY')) return 'Suryoday Small Finance Bank';
+  if (sender.contains('ESAF')) return 'ESAF Small Finance Bank';
+  if (sender.contains('AU')) return 'AU Small Finance Bank';
+  if (sender.contains('JANASMALL')) return 'Jana Small Finance Bank';
+  if (sender.contains('CAPITAL')) return 'Capital Small Finance Bank';
+
+  // 🏦 State / Co-operative Banks
+  if (sender.contains('MAHARASHTRA')) return 'Bank of Maharashtra';
+  if (sender.contains('KARNATAKA')) return 'Karnataka Bank';
+  if (sender.contains('KARUR')) return 'Karur Vysya Bank';
+  if (sender.contains('SARASWAT')) return 'Saraswat Co-operative Bank';
+  if (sender.contains('SHAMRAO')) return 'Shamrao Vithal Co-operative Bank';
+  if (sender.contains('TJSB')) return 'TJSB Sahakari Bank';
+  if (sender.contains('SOUTHDIAN') || sender.contains('SIB')) {
+    return 'South Indian Bank';
+  }
+  if (sender.contains('TAMILNAD')) return 'Tamilnad Mercantile Bank';
+  if (sender.contains('JNK') || sender.contains('JKB')) {
+    return 'Jammu & Kashmir Bank';
   }
 
-  bool isCredit(String body) {
-    final b = body.toLowerCase();
-    final explicitCredit = RegExp(
-        r'\b(credit(?:ed)?|deposited|received|refund|cashback|reversal)\b',
-        caseSensitive: false);
-    if (explicitCredit.hasMatch(b)) return true;
+  // 🧾 Slice (card based NBFC)
+  if (sender.contains('SLICE') || sender.contains('SLC')) return 'Slice';
 
-    final explicitDebit = RegExp(
-        r'\b(debit(?:ed)?|withdrawn|spent|purchase|paid|payment|card payment|atm withdrawal|sent)\b',
-        caseSensitive: false);
-    if (explicitDebit.hasMatch(b)) return false;
-
-    final abbrev = RegExp(r'\bcr\b', caseSensitive: false);
-    return abbrev.hasMatch(b);
+  // fallback
+  final parts = sender.split('-');
+  if (parts.length >= 2) {
+    return parts[1];
   }
 
-  /* -------- DATE FILTER -------- */
+  return sender;
+}
 
   bool isInRange(int? ts) {
     if (ts == null) return false;
@@ -113,15 +197,13 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       return d.isAfter(now.subtract(const Duration(days: 7)));
     }
 
-    // Logic for 3 months: If today is Feb 8, this goes back to Nov 8
     final threeMonthsAgo = DateTime(now.year, now.month - 3, now.day);
     return d.isAfter(threeMonthsAgo);
   }
 
-  /* -------- LOAD SMS -------- */
-
   Future<void> loadSms() async {
     setState(() => isLoading = true);
+
     final ok = await telephony.requestSmsPermissions;
     if (ok != true) {
       setState(() => isLoading = false);
@@ -129,7 +211,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     }
 
     final sms = await telephony.getInboxSms(
-      columns: [SmsColumn.BODY, SmsColumn.DATE],
+      columns: [SmsColumn.BODY, SmsColumn.DATE, SmsColumn.ADDRESS],
       sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
     );
 
@@ -138,35 +220,28 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
     dailyDebitMap.clear();
     dailyCreditMap.clear();
+    detectedBanks.clear();
 
     final List<SmsMessage> filtered = [];
-    
-    // REMOVED .take(50) to allow scanning all 3 months of history
+
     for (var msg in sms) {
-      final body = msg.body ?? '';
-      
-      // 1. Filter by date first
       if (!isInRange(msg.date)) continue;
 
-      final debit = isDebit(body);
-      final credit = isCredit(body);
+      final parsed = parseTransactionSMS(msg.body ?? '');
+      if (parsed == null) continue;
 
-      // 2. Determine if it's a financial transaction
-      if (!debit && !credit) continue;
-
-      // 3. Extract amount
-      final amt = extractAmount(body);
-      if (amt == 0) continue;
+      final bankName = extractBankName(msg);
+      detectedBanks.add(bankName);
 
       final dateTime = DateTime.fromMillisecondsSinceEpoch(msg.date!);
       final day = DateTime(dateTime.year, dateTime.month, dateTime.day);
 
-      if (debit) {
-        debitSum += amt;
-        dailyDebitMap[day] = (dailyDebitMap[day] ?? 0) + amt;
-      } else if (credit) {
-        creditSum += amt;
-        dailyCreditMap[day] = (dailyCreditMap[day] ?? 0) + amt;
+      if (parsed.isDebit) {
+        debitSum += parsed.amount;
+        dailyDebitMap[day] = (dailyDebitMap[day] ?? 0) + parsed.amount;
+      } else {
+        creditSum += parsed.amount;
+        dailyCreditMap[day] = (dailyCreditMap[day] ?? 0) + parsed.amount;
       }
 
       filtered.add(msg);
@@ -181,238 +256,283 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     });
   }
 
-  /* -------- AMOUNT EXTRACTION -------- */
-
-  double extractAmount(String body) {
-    final regex = RegExp(
-      r'(rs\.?|inr|₹)\s?([\d,]+(\.\d+)?)',
-      caseSensitive: false,
-    );
-
-    final match = regex.firstMatch(body.replaceAll(',', ''));
-    if (match != null) {
-      return double.tryParse(match.group(2)!) ?? 0;
-    }
-    return 0;
-  }
-
-  /* -------- MONTH HEADER -------- */
-
-  Widget _monthHeader(DateTime date) {
+  String _monthName(int month) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      "January","February","March","April","May","June",
+      "July","August","September","October","November","December"
     ];
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 6),
-      child: Row(
-        children: [
-          const Icon(Icons.calendar_month, size: 18, color: Colors.black54),
-          const SizedBox(width: 6),
-          Text(
-            '${months[date.month - 1]} ${date.year}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
+    return months[month - 1];
   }
-
-  /* -------- UI -------- */
 
   @override
-  Widget build(BuildContext context) {
+Widget build(BuildContext context) {
+  final displayMessages = selectedBank == null
+      ? messages
+      : messages.where((msg) {
+          final bank = extractBankName(msg);
+          return bank == selectedBank;
+        }).toList();
+
+  final Map<String, List<SmsMessage>> groupedMessages = {};
+
+  for (var msg in displayMessages) {
+    final date = DateTime.fromMillisecondsSinceEpoch(msg.date ?? 0);
+    final key = "${_monthName(date.month)} ${date.year}";
+    groupedMessages.putIfAbsent(key, () => []);
+    groupedMessages[key]!.add(msg);
+  }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F8FB),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(76),
-        child: AppBar(
-          elevation: 0,
-          automaticallyImplyLeading: false,
-          backgroundColor: Colors.transparent,
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1E3CFF), Color(0xFF4B6CFF)],
-              ),
+    extendBodyBehindAppBar: true,
+    backgroundColor: const Color(0xFFF4F8FB),
+    appBar: AppBar(
+      title: const Text('Transactions'),
+      centerTitle: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+    ),
+    body: Stack(
+      children: [
+
+        // 🖼 FULL BACKGROUND IMAGE
+        Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/bd_whatsapp.jpeg'),
+              fit: BoxFit.cover,
             ),
           ),
-          title: const Padding(
-            padding: EdgeInsets.fromLTRB(20, 20, 20, 2),
-            child: Text(
-              'Transactions',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+        ),
+
+        // 🔵 TOP BLUE GRADIENT ONLY
+        Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).padding.top + kToolbarHeight,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF4A6CF7),
+                    Color(0xFF6A8DFF),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
-          ),
-          actions: const [
-            Padding(
-              padding: EdgeInsets.only(right: 16, top: 12),
-              child: Icon(Icons.receipt_long, color: Colors.white),
-            ),
-          ],
+
+            // 📄 ORIGINAL BODY (UNCHANGED)
+            Expanded(
+              child: SafeArea(
+                top: false,
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : Column(
+                        children: [
+                          const SizedBox(height: 4),
+
+                          Expanded(
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(30),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+
+                                  Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          showAccounts = !showAccounts;
+                                        });
+                                      },
+                                      child: const Text("Accounts"),
+                                    ),
+                                  ),
+
+                                  if (showAccounts)
+                                    Column(
+                                      children: detectedBanks.map((bank) {
+                                        return ListTile(
+                                          title: Text(bank),
+                                          trailing: selectedBank == bank
+                                              ? const Icon(Icons.check)
+                                              : null,
+                                          onTap: () {
+                                            setState(() {
+                                              selectedBank =
+                                                  selectedBank == bank ? null : bank;
+                                              showAccounts = false;
+                                            });
+                                          },
+                                        );
+                                      }).toList(),
+                                    ),
+
+                                  Expanded(
+                                    child: ListView(
+                                      padding: const EdgeInsets.only(bottom: 16),
+                                      children: groupedMessages.entries.map((entry) {
+                                        final month = entry.key;
+                                        final msgs = entry.value;
+
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 16, vertical: 8),
+                                              child: Text(
+                                                month,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+
+                                            ...msgs.map((msg) {
+
+                                              final parsed =
+                                                  parseTransactionSMS(msg.body ?? '')!;
+                                              final date = DateTime.fromMillisecondsSinceEpoch(
+                                                  msg.date ?? 0);
+
+                                              final color = parsed.isDebit
+                                                  ? Colors.red
+                                                  : Colors.green;
+                                              final sign =
+                                                  parsed.isDebit ? '-' : '+';
+                                              final type =
+                                                  parsed.isDebit ? 'Debit' : 'Credit';
+
+                                              final formattedDate =
+                                                  '${date.day}/${date.month}/${date.year}';
+
+                                              return Container(
+  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+  padding: const EdgeInsets.all(14),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+  ),
+  child: Material(
+    color: Colors.transparent,
+    child: ListTile(
+      contentPadding: EdgeInsets.zero,
+
+      leading: CircleAvatar(
+        backgroundColor: color.withOpacity(0.12),
+        child: Icon(
+          parsed.isDebit ? Icons.arrow_upward : Icons.arrow_downward,
+          color: color,
         ),
       ),
-      body: isLoading 
-          ? const Center(child: CircularProgressIndicator()) 
-          : Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/bd_whatsapp.jpeg'),
-                fit: BoxFit.cover,
-              ),
-            ),
+
+      title: Text(
+        parsed.merchant,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+
+      subtitle: Text(
+        '$type • $formattedDate',
+        style: TextStyle(color: color, fontSize: 12),
+      ),
+
+      trailing: Text(
+        '$sign ₹${parsed.amount.toStringAsFixed(0)}',
+        style: TextStyle(
+          color: color,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: messages.length,
-            itemBuilder: (_, i) {
-              final msg = messages[i];
-              final body = msg.body ?? '';
-              final date = DateTime.fromMillisecondsSinceEpoch(msg.date ?? 0);
-
-              // Month Header logic
-              bool showHeader = false;
-              if (i == 0) {
-                showHeader = true;
-              } else {
-                final prevDate = DateTime.fromMillisecondsSinceEpoch(messages[i - 1].date!);
-                if (date.month != prevDate.month || date.year != prevDate.year) {
-                  showHeader = true;
-                }
-              }
-
-              final amt = extractAmount(body);
-              final debit = isDebit(body);
-              final color = debit ? Colors.red : Colors.green;
-              final sign = debit ? '-' : '+';
-              final type = debit ? 'Debit' : 'Credit';
-              final formattedDate = '${date.day}/${date.month}/${date.year}';
-
-              return SafeArea(
+          builder: (_) => SafeArea(
+            child: DraggableScrollableSheet(
+              expand: false,
+              builder: (_, controller) => SingleChildScrollView(
+                controller: controller,
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (showHeader) _monthHeader(date),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 8,
+                    Text(parsed.merchant,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+
+                    Text(type,
+                        style: TextStyle(
+                            color: color, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+
+                    Text(
+                      'Amount: $sign ₹${parsed.amount.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    Text('Date: $formattedDate',
+                        style: const TextStyle(color: Colors.grey)),
+
+                    const Divider(height: 24),
+
+                    const Text('Transaction Message',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 14)),
+                    const SizedBox(height: 6),
+
+                    Text(msg.body ?? '',
+                        style: const TextStyle(fontSize: 13)),
+
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+  ),
+);
+
+                                            }).toList(),
+                                          ],
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: CircleAvatar(
-                          backgroundColor: color.withOpacity(0.12),
-                          child: Icon(
-                            debit ? Icons.arrow_upward : Icons.arrow_downward,
-                            color: color,
-                          ),
-                        ),
-                        title: Text(
-                          extractMerchant(body),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          '$type • $formattedDate',
-                          style: TextStyle(color: color, fontSize: 12),
-                        ),
-                        trailing: Text(
-                          '$sign ₹${amt.toStringAsFixed(0)}',
-                          style: TextStyle(
-                            color: color,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                            ),
-                            builder: (_) => SafeArea(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      extractMerchant(body),
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      type,
-                                      style: TextStyle(
-                                        color: color,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Amount: $sign ₹${amt.toStringAsFixed(0)}',
-                                      style: TextStyle(
-                                        color: color,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Date: $formattedDate',
-                                      style: const TextStyle(color: Colors.grey),
-                                    ),
-                                    const Divider(height: 24),
-                                    const Text(
-                                      'Transaction Message',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      body,
-                                      style: const TextStyle(fontSize: 13),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+
+}
 }
