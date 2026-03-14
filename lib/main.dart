@@ -5,9 +5,12 @@ import 'package:telephony/telephony.dart';
 import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
 import 'data/refresh_totals.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await NotificationService.init();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:telephony/telephony.dart';
 import '../globals.dart';
+import '../services/emi_service.dart';
+import '../services/emi_payment_service.dart';
+import '../models/emi_payment_model.dart';
 
 /* =========================================================
    TRANSACTION PARSER (STRICT – NO FALSE POSITIVES)
@@ -84,6 +87,27 @@ ParsedTransaction? parseTransactionSMS(String bodyRaw) {
     amount: amount,
     merchant: 'BANK TRANSACTION',
   );
+}
+
+bool isEmiPayment(String bodyRaw) {
+
+  final body = bodyRaw.toUpperCase();
+
+  final emiKeywords = [
+    'EMI',
+    'INSTALLMENT',
+    'LOAN REPAYMENT',
+    'LOAN PAYMENT',
+    'ECS',
+  ];
+
+  for (final k in emiKeywords) {
+    if (body.contains(k)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /* =========================================================
@@ -230,6 +254,41 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       final parsed = parseTransactionSMS(msg.body ?? '');
       if (parsed == null) continue;
 
+      // ⭐ EMI detection
+  if (isEmiPayment(msg.body ?? '')) {
+
+  final parsed = parseTransactionSMS(msg.body ?? '');
+
+  if (parsed != null && parsed.isDebit) {
+
+    // Payment history me add
+    emiPayments.add(
+      EmiPaymentModel(
+        emiName: "Loan EMI",
+        amount: parsed.amount,
+        date: DateTime.fromMillisecondsSinceEpoch(msg.date!),
+      ),
+    );
+
+    // EMI progress update
+    for (var emi in emiList) {
+
+      if (parsed.amount == emi.monthlyEmi) {
+
+        emi.remainingMonths -= 1;
+        emi.paidMonths += 1;
+
+        emi.nextDue = DateTime(
+          emi.nextDue.year,
+          emi.nextDue.month + 1,
+          emi.nextDue.day,
+        );
+      }
+
+    }
+
+  }
+}
       final bankName = extractBankName(msg);
       detectedBanks.add(bankName);
 
