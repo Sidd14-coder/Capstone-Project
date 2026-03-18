@@ -1,3 +1,5 @@
+import 'models/transaction_model.dart';
+
 // ================= FILTER TYPE =================
 
 enum FilterType { weekly, monthly }
@@ -56,3 +58,6 @@ String registeredPassword = '';
 Map<String, double> bankBalances = {}; 
 Map<String, String> bankAccounts = {}; 
 Map<String, int> bankLastSmsTime = {};
+
+// All parsed transactions from SMS
+List<TransactionModel> allTransactions = [];

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/notification_service.dart';
 import '../../services/emi_service.dart';
+import 'package:hive/hive.dart';
 
 class ReminderSettingsScreen extends StatefulWidget {
   const ReminderSettingsScreen({super.key});
@@ -24,6 +25,9 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
   @override
   Widget build(BuildContext context) {
 
+    var box = Hive.box('emiBox');
+    var emiData = box.values.toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F7),
 
@@ -39,65 +43,46 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
           children: [
 
             /// EMI CARD
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: const [
-                  BoxShadow(
-                    blurRadius: 8,
-                    color: Colors.black12,
-                  )
-                ],
-              ),
+            ...emiData.map((e) {
 
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+  return Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(16),
 
-                  const Text(
-                    "Laptop EMI",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: const [
+        BoxShadow(
+          blurRadius: 8,
+          color: Colors.black12,
+        )
+      ],
+    ),
 
-                  const SizedBox(height: 10),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+        Text(
+          e['name'],
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
 
-                      Text(
-                        "\$150/month",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+        const SizedBox(height: 10),
 
-                      Text(
-                        "5 months left",
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
-                      )
-                    ],
-                  ),
+        Text("₹${e['emi']}/month"),
 
-                  const SizedBox(height: 6),
+        Text("${e['remainingMonths']} months left"),
 
-                  const Text(
-                    "Remaining: May 10",
-                    style: TextStyle(color: Colors.grey),
-                  )
+      ],
+    ),
+  );
 
-                ],
-              ),
-            ),
+}).toList(),
 
             const SizedBox(height: 20),
 

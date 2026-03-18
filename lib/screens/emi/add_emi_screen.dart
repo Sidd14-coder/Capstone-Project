@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/emi_model.dart';
+// import '../../models/emi_model.dart';
 import '../../services/emi_service.dart';
+import 'package:hive/hive.dart';
 
 class AddEmiScreen extends StatefulWidget {
   const AddEmiScreen({super.key});
@@ -17,25 +18,27 @@ class _AddEmiScreenState extends State<AddEmiScreen> {
   final loan = TextEditingController();
   final emi = TextEditingController();
   final tenure = TextEditingController();
+  final interest = TextEditingController();
 
   void saveEmi() {
 
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    emiList.add(
-      EmiModel(
-        name: name.text,
-        loanAmount: double.parse(loan.text),
-        monthlyEmi: double.parse(emi.text),
-        tenure: int.parse(tenure.text),
-        remainingMonths: int.parse(tenure.text),
-        paidMonths: 0,
-        nextDue: DateTime.now(),
-      ),
-    );
+  var box = Hive.box('emiBox');
 
-    Navigator.pop(context);
-  }
+  box.add({
+    "name": name.text,
+    "loanAmount": double.tryParse(loan.text) ?? 0,
+    "emi": double.tryParse(emi.text) ?? 0,
+    "tenure": int.tryParse(tenure.text) ?? 0,
+    "paidMonths": 0,
+    "remainingMonths": int.tryParse(tenure.text) ?? 0,
+    "keywords": name.text.toLowerCase(), // 🔥 IMPORTANT
+    "nextDue": DateTime.now().toString(),
+  });
+
+  Navigator.pop(context);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +79,7 @@ class _AddEmiScreenState extends State<AddEmiScreen> {
               ),
 
               TextFormField(
-                controller: tenure,
+                controller: interest,
                 decoration: const InputDecoration(labelText: "Rate Of Interest"),
                 keyboardType: TextInputType.number,
               ),

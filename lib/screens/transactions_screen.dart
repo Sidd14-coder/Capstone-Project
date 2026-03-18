@@ -4,6 +4,7 @@ import '../globals.dart';
 import '../services/emi_service.dart';
 import '../services/emi_payment_service.dart';
 import '../models/emi_payment_model.dart';
+import 'package:hive/hive.dart';
 
 /* =========================================================
    TRANSACTION PARSER (STRICT – NO FALSE POSITIVES)
@@ -262,30 +263,45 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   if (parsed != null && parsed.isDebit) {
 
     // Payment history me add
-    emiPayments.add(
-      EmiPaymentModel(
-        emiName: "Loan EMI",
-        amount: parsed.amount,
-        date: DateTime.fromMillisecondsSinceEpoch(msg.date!),
-      ),
-    );
+    if (isEmiPayment(msg.body ?? '')) {
 
-    // EMI progress update
-    for (var emi in emiList) {
+  final parsed = parseTransactionSMS(msg.body ?? '');
 
-      if (parsed.amount == emi.monthlyEmi) {
+  if (parsed != null && parsed.isDebit) {
 
-        emi.remainingMonths -= 1;
-        emi.paidMonths += 1;
+    var emiBox = Hive.box('emiBox');
+    var historyBox = Hive.box('paymentHistory');
 
-        emi.nextDue = DateTime(
-          emi.nextDue.year,
-          emi.nextDue.month + 1,
-          emi.nextDue.day,
-        );
+    var emiList = emiBox.values.toList();
+
+    for (int i = 0; i < emiList.length; i++) {
+
+      var emi = emiList[i];
+
+      // 🔥 MATCH AMOUNT
+      if (parsed.amount == emi['emi']) {
+
+        // ✅ UPDATE EMI
+        int remaining = emi['remainingMonths'];
+
+        if (remaining > 0) {
+          emi['remainingMonths'] = remaining - 1;
+
+          emiBox.putAt(i, emi);
+        }
+
+        // ✅ SAVE HISTORY
+        historyBox.add({
+          "name": emi['name'],
+          "amount": parsed.amount,
+          "date": DateTime.fromMillisecondsSinceEpoch(msg.date!).toString(),
+        });
+
+        break;
       }
-
     }
+  }
+}
 
   }
 }

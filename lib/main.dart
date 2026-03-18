@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
 import 'data/refresh_totals.dart';
 import 'services/notification_service.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await Hive.initFlutter();
+
+  await Hive.openBox('emiBox');
+  await Hive.openBox('paymentHistory'); // 🔥 IMPORTANT
+
+  await Hive.openBox('customTransactions');
 
   // ✅ REQUEST SMS PERMISSION ONCE AT APP START
   final telephony = Telephony.instance;
