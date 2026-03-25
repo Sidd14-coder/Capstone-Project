@@ -15,6 +15,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String category = "Select Category";
   String amount = "";
   TextEditingController desc = TextEditingController();
+  TextEditingController amountController = TextEditingController();
 
   List<String> categories = [
     "Food","Health","Grocery","Bills","Dining","Education",
@@ -29,7 +30,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       "type": type,
       "account": account,
       "category": category,
-      "amount": double.tryParse(amount) ?? 0,
+      "amount": double.tryParse(amount),
       "note": desc.text,
       "date": DateTime.now().toString(),
     });
@@ -62,17 +63,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   /// KEYPAD BUTTON
-  Widget numBtn(String n) {
-    return GestureDetector(
-      onTap: () {
-        setState(() => amount += n);
-      },
-      child: Container(
-        alignment: Alignment.center,
-        child: Text(n, style: const TextStyle(fontSize: 22)),
-      ),
-    );
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -144,10 +135,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     Text(
                       "${DateTime.now().day}/${DateTime.now().month}",
                     ),
-                    Text(
-                      "₹ $amount",
-                      style: const TextStyle(fontSize: 18),
-                    ),
+                    SizedBox(
+  width: 120,
+  child: TextField(
+    controller: amountController,
+    keyboardType: const TextInputType.numberWithOptions(decimal: true), // 🔥 number keyboard
+    decoration: const InputDecoration(
+      prefixText: "₹ ",
+      hintText: "0",
+    ),
+  ),
+),
                   ],
                 ),
               ],
@@ -157,28 +155,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           const Divider(),
 
           /// KEYPAD
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 3,
-              children: [
-                numBtn("1"), numBtn("2"), numBtn("3"),
-                numBtn("4"), numBtn("5"), numBtn("6"),
-                numBtn("7"), numBtn("8"), numBtn("9"),
-                numBtn("0"), numBtn("."),
-
-                GestureDetector(
-                  onTap: () {
-                    if (amount.isNotEmpty) {
-                      setState(() {
-                        amount = amount.substring(0, amount.length - 1);
-                      });
-                    }
-                  },
-                  child: const Icon(Icons.backspace),
-                ),
-              ],
-            ),
-          ),
+          
 
           /// BUTTONS
           Row(

@@ -329,6 +329,9 @@
 //   return 'Unknown Bank';
 // }
 
+
+
+
 import 'package:telephony/telephony.dart';
 import '../../globals.dart';
 import '../../models/transaction_model.dart';
@@ -412,7 +415,9 @@ Future<void> refreshTotals() async {
   bankAccounts.clear();
   bankLastSmsTime.clear();
 
-  for (var msg in sms.take(1500)) {
+  // for (var msg in sms.take(1500)) {
+
+  for (var msg in sms) {
     final body = msg.body ?? '';
     final ts = msg.date;
     if (ts == null) continue;
@@ -452,23 +457,23 @@ Future<void> refreshTotals() async {
 
     if (!inRange) continue;
 
-    final debit = _isDebit(body);
-    final credit = _isCredit(body);
+    bool isDebit = _isDebit(body);
+    bool isCredit = _isCredit(body);
 
-    if (!debit && !credit) continue;
+    if (isDebit == isCredit) continue;
 
     final amt = _extractAmount(body);
     if (amt == 0) continue;
 
     final day = DateTime(d.year, d.month, d.day);
 
-    if (debit) {
-      debitSum += amt;
-      dailyDebitMap[day] = (dailyDebitMap[day] ?? 0) + amt;
-    } else if (credit) {
-      creditSum += amt;
-      dailyCreditMap[day] = (dailyCreditMap[day] ?? 0) + amt;
-    }
+    if (isDebit) {
+  debitSum += amt;
+  dailyDebitMap[day] = (dailyDebitMap[day] ?? 0) + amt;
+} else if (isCredit) {
+  creditSum += amt;
+  dailyCreditMap[day] = (dailyCreditMap[day] ?? 0) + amt;
+}
   }
 
   totalDebit = debitSum;
@@ -493,15 +498,16 @@ double _extractAmount(String body) {
 
 bool _isDebit(String body) {
   final b = body.toLowerCase();
-  final explicitDebit = RegExp(
-      r'\b(debit(?:ed)?|withdrawn|spent|purchase|paid|payment|card payment|atm withdrawal|sent)\b',
-      caseSensitive: false);
-  if (explicitDebit.hasMatch(b)) return true;
 
   final explicitCredit = RegExp(
-      r'\b(credit(?:ed)?|deposited|received|refund|cashback|reversal)\b',
+      r'\b(credit(?:ed)?|deposited|received|refund|cashback|reversal|credited)\b',
       caseSensitive: false);
   if (explicitCredit.hasMatch(b)) return false;
+
+  final explicitDebit = RegExp(
+      r'\b(debit(?:ed)?|withdrawn|spent|purchase|paid|card payment|atm withdrawal|sent)\b',
+      caseSensitive: false);
+  if (explicitDebit.hasMatch(b)) return true;
 
   final abbrev = RegExp(r'\bdr\b', caseSensitive: false);
   return abbrev.hasMatch(b);

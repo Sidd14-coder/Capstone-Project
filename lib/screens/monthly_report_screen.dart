@@ -825,6 +825,352 @@
 
 
 
+// Download option with file saving and sharing
+// import 'dart:io';
+// import 'package:flutter/material.dart';
+// import 'package:fl_chart/fl_chart.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'package:share_plus/share_plus.dart';
+// import 'package:pdf/widgets.dart' as pw;
+// import '../globals.dart';
+// import 'package:pdf/pdf.dart';
+// import 'package:permission_handler/permission_handler.dart';
+
+// class MonthlyReportScreen extends StatefulWidget {
+//   const MonthlyReportScreen({super.key});
+
+//   @override
+//   State<MonthlyReportScreen> createState() => _MonthlyReportScreenState();
+// }
+
+// class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
+
+//   bool compareMode = false;
+
+//   // late List<double> weeklyExpenses;
+//   late List<double> chartData;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     chartData = _calculateWeekly();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+
+//     double income;
+// double expense;
+// double saving;
+
+// if (compareMode) {
+//   final data = _calculate3MonthTotals();
+//   income = data["income"]!;
+//   expense = data["expense"]!;
+//   saving = data["saving"]!;
+// } else {
+//   income = totalCredit;
+//   expense = totalDebit;
+//   saving = totalCredit - totalDebit;
+// }
+
+// double opening = 0;
+// double closing = opening + saving;
+
+//     return Scaffold(
+
+//       body: Stack(
+//         children: [
+
+//           /// BACKGROUND IMAGE
+//           Container(
+//             decoration: const BoxDecoration(
+//               image: DecorationImage(
+//                 image: AssetImage("assets/images/bd_whatsapp.jpeg"),
+//                 fit: BoxFit.cover,
+//               ),
+//             ),
+//           ),
+
+//           SafeArea(
+//             child: Column(
+//               children: [
+
+//                 /// HEADER
+//                 Container(
+//                   width: double.infinity,
+//                   padding: const EdgeInsets.all(18),
+//                   color: const Color(0xff247155),
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+
+//                       const Text(
+//                         "Monthly Report",
+//                         style: TextStyle(
+//                             color: Colors.white,
+//                             fontSize: 22,
+//                             fontWeight: FontWeight.bold),
+//                       ),
+
+//                       const SizedBox(height: 4),
+
+//                       Text(
+//                         _currentMonth(),
+//                         style: const TextStyle(color: Colors.white70),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+
+//                 Expanded(
+//                   child: SingleChildScrollView(
+//                     padding: const EdgeInsets.all(16),
+//                     child: Column(
+//                       children: [
+
+//                         /// BUTTONS
+//                         Row(
+//                           children: [
+
+//                             Expanded(
+//                               child: ElevatedButton(
+//                                 style: ElevatedButton.styleFrom(
+//                                   backgroundColor: compareMode
+//                                       ? Colors.grey
+//                                       : const Color(0xff4CAF50),
+//                                 ),
+//                                 onPressed: () {
+//                                   setState(() {
+//                                     compareMode = false;
+//                                     chartData = _calculateWeekly(); // 🔥 important
+//                                   });
+//                                 },
+//                                 child: const Text("This Month"),
+//                               ),
+//                             ),
+
+//                             const SizedBox(width: 10),
+
+//                             Expanded(
+//                               child: ElevatedButton(
+//                                 style: ElevatedButton.styleFrom(
+//                                   backgroundColor: compareMode
+//                                       ? const Color(0xff4CAF50)
+//                                       : Colors.grey,
+//                                 ),
+//                                 onPressed: () {
+//   setState(() {
+//     compareMode = true;
+//     chartData = _calculateLast3Months(); // 🔥 important
+//   });
+// },
+//                                 child: const Text("Compare 3 Months"),
+//                               ),
+//                             )
+//                           ],
+//                         ),
+
+//                         const SizedBox(height: 16),
+
+//                         /// INCOME EXPENSE SAVING
+//                         Row(
+//                           children: [
+
+//                             Expanded(
+//                                 child: _infoBox(
+//                                     "Total Income",
+//                                     income,
+//                                     Colors.blue.shade100)),
+
+//                             const SizedBox(width: 10),
+
+//                             Expanded(
+//                                 child: _infoBox(
+//                                     "Total Expense",
+//                                     expense,
+//                                     Colors.red.shade100)),
+
+//                             const SizedBox(width: 10),
+
+//                             Expanded(
+//                                 child: _infoBox(
+//                                     "Total Saving",
+//                                     saving,
+//                                     Colors.green.shade100)),
+//                           ],
+//                         ),
+
+//                         const SizedBox(height: 18),
+
+//                         /// SUMMARY
+//                         Container(
+//                           width: double.infinity,
+//                           padding: const EdgeInsets.all(14),
+//                           decoration: BoxDecoration(
+//                             color: Colors.white.withOpacity(.9),
+//                             borderRadius: BorderRadius.circular(10),
+//                           ),
+//                           child: Column(
+//                             crossAxisAlignment: CrossAxisAlignment.start,
+//                             children: [
+
+//                               const Text(
+//                                 "Summary",
+//                                 style: TextStyle(
+//                                     fontSize: 16,
+//                                     fontWeight: FontWeight.bold),
+//                               ),
+
+//                               const SizedBox(height: 6),
+
+// Text("Net Change : ₹${saving.toStringAsFixed(2)}"),
+// Text("Opening Balance : ₹${opening.toStringAsFixed(2)}"),
+// Text("Closing Balance : ₹${closing.toStringAsFixed(2)}"),
+//                             ],
+//                           ),
+//                         ),
+
+//                         const SizedBox(height: 18),
+
+//                         /// TRANSACTIONS
+//                         const Align(
+//                           alignment: Alignment.centerLeft,
+//                           child: Text(
+//                             "Recent Transactions",
+//                             style: TextStyle(
+//                                 fontSize: 17,
+//                                 fontWeight: FontWeight.bold),
+//                           ),
+//                         ),
+
+//                         const SizedBox(height: 10),
+
+//                         ..._topTransactions(),
+
+//                         const SizedBox(height: 18),
+
+//                         /// SPENDING TREND
+//                         const Align(
+//                           alignment: Alignment.centerLeft,
+//                           child: Text(
+//                             "Spending Trend",
+//                             style: TextStyle(
+//                                 fontSize: 17,
+//                                 fontWeight: FontWeight.bold),
+//                           ),
+//                         ),
+
+//                         const SizedBox(height: 10),
+
+//                         SizedBox(
+//                           height: 200,
+//                           child: BarChart(
+//                             BarChartData(
+//                               titlesData: FlTitlesData(
+
+//                                 leftTitles: const AxisTitles(
+//                                     sideTitles: SideTitles(showTitles: false)),
+
+//                                 rightTitles: const AxisTitles(
+//                                     sideTitles: SideTitles(showTitles: false)),
+
+//                                 topTitles: const AxisTitles(
+//                                     sideTitles: SideTitles(showTitles: false)),
+
+//                                 bottomTitles: AxisTitles(
+//                                   sideTitles: SideTitles(
+//                                     showTitles: true,
+//                                     getTitlesWidget: (value, meta) {
+
+//   if(compareMode){
+//     return Text("M${value.toInt()+1}");
+//   }else{
+//     return Text("Week${value.toInt()+1}");
+//   }
+
+// },
+//                                   ),
+//                                 ),
+//                               ),
+
+//                               /// 🔥 YAHAN ADD KARNA HAI
+//     gridData: FlGridData(
+//       show: true,
+//       drawVerticalLine: false,
+//     ),
+
+
+//                               borderData: FlBorderData(show: false),
+
+//                               barGroups: List.generate(
+//                                 chartData.length,
+//                                 (i) => BarChartGroupData(
+//                                   x: i,
+//                                   barRods: [
+//                                     BarChartRodData(
+//   toY: chartData[i],
+//   width: 16,
+//   borderRadius: BorderRadius.circular(8),
+//   gradient: const LinearGradient(
+//     colors: [
+//       Color(0xff4CAF50),
+//       Color(0xff81C784),
+//     ],
+//     begin: Alignment.bottomCenter,
+//     end: Alignment.topCenter,
+//   ),
+// ),
+//                                   ],
+//                                   showingTooltipIndicators: [0],
+//                                 ),
+//                               ),
+//                             ),
+//                           ),
+//                         ),
+
+//                         const SizedBox(height: 20),
+
+//                         /// BUTTONS
+//                         Row(
+//                           children: [
+
+//                             Expanded(
+//                               child: ElevatedButton.icon(
+//                                 icon: const Icon(Icons.download),
+//                                 label: const Text("Download"),
+//                                 onPressed: () async {
+//   await _downloadPdf();
+// },
+//                               ),
+//                             ),
+
+//                             const SizedBox(width: 10),
+
+//                             Expanded(
+//                               child: ElevatedButton.icon(
+//                                 icon: const Icon(Icons.share),
+//                                 label: const Text("Share Report"),
+//                                 onPressed: () async {
+//   await _sharePdf();
+// },
+//                               ),
+//                             )
+//                           ],
+//                         )
+//                       ],
+//                     ),
+//                   ),
+//                 )
+//               ],
+//             ),
+//           )
+//         ],
+//       ),
+//     );
+//   }
+
+// 🔥 ONLY CHANGE: Download button removed + Share centered
 
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -833,6 +1179,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../globals.dart';
+import 'package:pdf/pdf.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class MonthlyReportScreen extends StatefulWidget {
@@ -845,296 +1192,275 @@ class MonthlyReportScreen extends StatefulWidget {
 class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
 
   bool compareMode = false;
-
-  late List<double> weeklyExpenses;
+  late List<double> chartData;
 
   @override
   void initState() {
     super.initState();
-    weeklyExpenses = _calculateWeekly();
+    chartData = _calculateWeekly();
   }
 
   @override
-  Widget build(BuildContext context) {
+Widget build(BuildContext context) {
 
-    double saving = totalCredit - totalDebit;
+  double income;
+  double expense;
+  double saving;
 
-    return Scaffold(
+  if (compareMode) {
+    final data = _calculate3MonthTotals();
+    income = data["income"]!;
+    expense = data["expense"]!;
+    saving = data["saving"]!;
+  } else {
+    income = totalCredit;
+    expense = totalDebit;
+    saving = totalCredit - totalDebit;
+  }
 
-      body: Stack(
-        children: [
+  double opening = 0;
+  double closing = opening + saving;
 
-          /// BACKGROUND IMAGE
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/bd_whatapp"),
-                fit: BoxFit.cover,
-              ),
+  double percentUsed = expense == 0 ? 0 : (expense / income) * 100;
+
+  return Scaffold(
+    body: Stack(
+      children: [
+
+        /// BACKGROUND
+        Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/images/bd_whatsapp.jpeg"),
+              fit: BoxFit.cover,
             ),
           ),
+        ),
 
-          SafeArea(
-            child: Column(
-              children: [
+        SafeArea(
+          child: Column(
+            children: [
 
-                /// HEADER
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(18),
-                  color: const Color(0xff247155),
+              /// 🔥 HEADER
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: const Color(0xff2E7D5B),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Text(
+                          "Monthly Report",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Generated on ${DateTime.now().day} ${_currentMonth()}",
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
 
-                      const Text(
-                        "Monthly Report",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold),
-                      ),
-
-                      const SizedBox(height: 4),
-
-                      Text(
-                        _currentMonth(),
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-
-                        /// BUTTONS
-                        Row(
+                      /// 🔥 TOGGLE BUTTONS
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Row(
                           children: [
 
                             Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: compareMode
-                                      ? Colors.grey
-                                      : const Color(0xff4CAF50),
-                                ),
-                                onPressed: () {
+                              child: GestureDetector(
+                                onTap: () {
                                   setState(() {
                                     compareMode = false;
+                                    chartData = _calculateWeekly();
                                   });
                                 },
-                                child: const Text("This Month"),
-                              ),
-                            ),
-
-                            const SizedBox(width: 10),
-
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: compareMode
-                                      ? const Color(0xff4CAF50)
-                                      : Colors.grey,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    compareMode = true;
-                                  });
-                                },
-                                child: const Text("Compare 5 Months"),
-                              ),
-                            )
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        /// INCOME EXPENSE SAVING
-                        Row(
-                          children: [
-
-                            Expanded(
-                                child: _infoBox(
-                                    "Total Income",
-                                    totalCredit,
-                                    Colors.blue.shade100)),
-
-                            const SizedBox(width: 10),
-
-                            Expanded(
-                                child: _infoBox(
-                                    "Total Expense",
-                                    totalDebit,
-                                    Colors.red.shade100)),
-
-                            const SizedBox(width: 10),
-
-                            Expanded(
-                                child: _infoBox(
-                                    "Total Saving",
-                                    saving,
-                                    Colors.green.shade100)),
-                          ],
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        /// SUMMARY
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(.9),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-
-                              const Text(
-                                "Summary",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold),
-                              ),
-
-                              const SizedBox(height: 6),
-
-                              Text("Net Change : ₹${totalCredit-totalDebit}"),
-                              const Text("Opening Balance : ₹0"),
-                              const Text("Closing Balance : ₹0"),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        /// TRANSACTIONS
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Top Transactions",
-                            style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        ..._topTransactions(),
-
-                        const SizedBox(height: 18),
-
-                        /// SPENDING TREND
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Spending Trend",
-                            style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        SizedBox(
-                          height: 200,
-                          child: BarChart(
-                            BarChartData(
-                              titlesData: FlTitlesData(
-
-                                leftTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false)),
-
-                                rightTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false)),
-
-                                topTitles: const AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false)),
-
-                                bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    getTitlesWidget: (value, meta) {
-
-                                      switch (value.toInt()) {
-                                        case 0:
-                                          return const Text("Week1");
-                                        case 1:
-                                          return const Text("Week2");
-                                        case 2:
-                                          return const Text("Week3");
-                                        case 3:
-                                          return const Text("Week4");
-                                      }
-                                      return const Text("");
-                                    },
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: compareMode ? Colors.transparent : Colors.green,
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "This Month",
+                                      style: TextStyle(
+                                        color: compareMode ? Colors.black : Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
+                            ),
 
-                              borderData: FlBorderData(show: false),
-
-                              barGroups: List.generate(
-                                weeklyExpenses.length,
-                                (i) => BarChartGroupData(
-                                  x: i,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: weeklyExpenses[i],
-                                      width: 18,
-                                      borderRadius: BorderRadius.circular(6),
-                                    )
-                                  ],
-                                  showingTooltipIndicators: [0],
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    compareMode = true;
+                                    chartData = _calculateLast3Months();
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: compareMode ? Colors.green : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "Compare 3 Months",
+                                      style: TextStyle(
+                                        color: compareMode ? Colors.white : Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        /// BUTTONS
-                        Row(
-                          children: [
-
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                icon: const Icon(Icons.download),
-                                label: const Text("Download"),
-                                onPressed: _downloadPdf,
-                              ),
-                            ),
-
-                            const SizedBox(width: 10),
-
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                icon: const Icon(Icons.share),
-                                label: const Text("Share Report"),
-                                onPressed: _sharePdf,
-                              ),
-                            )
                           ],
-                        )
-                      ],
-                    ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      /// 🔥 CARDS
+                      Row(
+                        children: [
+                          Expanded(child: _modernCard("Total Income", income, Colors.blue)),
+                          const SizedBox(width: 8),
+                          Expanded(child: _modernCard("Total Expense", expense, Colors.red)),
+                          const SizedBox(width: 8),
+                          Expanded(child: _modernCard("Total Saving", saving, Colors.green)),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      /// SUMMARY
+                      _sectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Summary", style: TextStyle(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 6),
+                            Text("Net Change: ₹${saving.toInt()}"),
+                            Text("Opening Balance: ₹${opening.toInt()}"),
+                            Text("Closing Balance: ₹${closing.toInt()}"),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      /// TRANSACTIONS
+                      _sectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Recent Transactions", style: TextStyle(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 10),
+                            ..._topTransactions(),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      /// CHART
+                      _sectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+  compareMode ? "3 Months Comparison" : "Weekly Spending",
+  style: const TextStyle(fontWeight: FontWeight.bold),
+),
+                            const SizedBox(height: 10),
+                            SizedBox(height: 200, child: _buildChart()),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      /// 🔥 WARNING BOX
+                      /// 🔥 DYNAMIC WARNING BOX
+
+Container(
+  padding: const EdgeInsets.all(12),
+  decoration: BoxDecoration(
+    color: percentUsed > 80
+        ? Colors.red.shade100
+        : percentUsed > 50
+            ? Colors.orange.shade100
+            : Colors.green.shade100,
+    borderRadius: BorderRadius.circular(10),
+  ),
+  child: Text(
+    percentUsed > 80
+        ? "⚠️ Warning: You used ${percentUsed.toStringAsFixed(0)}% of your monthly budget!"
+        : percentUsed > 50
+            ? "⚡ You used ${percentUsed.toStringAsFixed(0)}% of your budget"
+            : "✅ Good! Only ${percentUsed.toStringAsFixed(0)}% used",
+    style: TextStyle(
+      color: percentUsed > 80 ? Colors.red : Colors.black,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+),
+
+                      const SizedBox(height: 20),
+
+                      /// 🔥 SHARE BUTTON
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30)),
+                        ),
+                        icon: const Icon(Icons.share),
+                        label: const Text("Share Report"),
+                        onPressed: () async {
+                          await _sharePdf();
+                        },
+                      )
+                    ],
                   ),
-                )
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
+                ),
+              )
+            ],
+          ),
+        )
+      ],
+    ),
+  );
+}
+
+  // 🔥 बाकी पूरा code SAME है (unchanged)
 
   Widget _infoBox(String title, double amount, Color color) {
 
@@ -1158,6 +1484,86 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
       ),
     );
   }
+
+  Widget _modernCard(String title, double amount, Color color) {
+  return Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Column(
+      children: [
+        Text(title),
+        const SizedBox(height: 6),
+        Text("₹${amount.toInt()}",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+      ],
+    ),
+  );
+}
+
+Widget _sectionCard({required Widget child}) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(.95),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: child,
+  );
+}
+
+Widget _buildChart() {
+  return BarChart(
+    BarChartData(
+      borderData: FlBorderData(show: false),
+
+      /// 🔥 LABELS ADD KIYE
+      titlesData: FlTitlesData(
+        leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false)),
+        rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false)),
+        topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false)),
+
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: (value, meta) {
+
+              if (compareMode) {
+                return Text("M${value.toInt() + 1}",
+                    style: const TextStyle(fontSize: 10));
+              } else {
+                return Text("W${value.toInt() + 1}",
+                    style: const TextStyle(fontSize: 10));
+              }
+
+            },
+          ),
+        ),
+      ),
+
+      barGroups: List.generate(
+        chartData.length,
+        (i) => BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: chartData[i],
+              width: 14,
+              borderRadius: BorderRadius.circular(6),
+              color: compareMode ? Colors.blue : Colors.green,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 
   List<Widget> _topTransactions() {
 
@@ -1202,40 +1608,110 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
     return weeks;
   }
 
-  Future<File> _generatePdf() async {
+  List<double> _calculateLast3Months() {
+  Map<int, double> monthly = {};
 
-    final pdf=pw.Document();
+  final now = DateTime.now();
 
-    pdf.addPage(
-      pw.Page(
-        build:(context){
-
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children:[
-
-              pw.Text("BudgetBee Monthly Report",
-                  style: pw.TextStyle(fontSize:22)),
-
-              pw.SizedBox(height:20),
-
-              pw.Text("Total Income : ₹$totalCredit"),
-              pw.Text("Total Expense : ₹$totalDebit"),
-              pw.Text("Saving : ₹${totalCredit-totalDebit}"),
-            ],
-          );
-        },
-      ),
-    );
-
-    final dir=await getApplicationDocumentsDirectory();
-
-    final file=File("${dir.path}/monthly_report.pdf");
-
-    await file.writeAsBytes(await pdf.save());
-
-    return file;
+  for (int i = 0; i < 3; i++) {
+    int month = now.month - i;
+    monthly[month] = 0;
   }
+
+  for (var tx in allTransactions) {
+    if (!tx.isCredit) {
+      int m = tx.date.month;
+
+      if (monthly.containsKey(m)) {
+        monthly[m] = monthly[m]! + tx.amount;
+      }
+    }
+  }
+
+  return monthly.values.toList().reversed.toList();
+}
+
+Map<String, double> _calculate3MonthTotals() {
+
+  double income = 0;
+  double expense = 0;
+
+  final now = DateTime.now();
+
+  for (var tx in allTransactions) {
+
+    if (tx.date.isAfter(DateTime(now.year, now.month - 3, now.day))) {
+
+      if (tx.isCredit) {
+        income += tx.amount;
+      } else {
+        expense += tx.amount;
+      }
+    }
+  }
+
+  return {
+    "income": income,
+    "expense": expense,
+    "saving": income - expense,
+  };
+}
+
+  Future<File> _generatePdf() async {
+  final pdf = pw.Document();
+
+  final data = compareMode
+      ? _calculate3MonthTotals()
+      : {
+          "income": totalCredit,
+          "expense": totalDebit,
+          "saving": totalCredit - totalDebit
+        };
+
+  pdf.addPage(
+    pw.MultiPage(
+      build: (context) => [
+        pw.Text("BudgetBee Monthly Report",
+            style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+
+        pw.SizedBox(height: 20),
+
+        pw.Text("Income: ₹${data["income"]}"),
+        pw.Text("Expense: ₹${data["expense"]}"),
+        pw.Text("Saving: ₹${data["saving"]}"),
+
+        pw.SizedBox(height: 20),
+
+        pw.Text("Spending Trend"),
+
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+          children: chartData.map((e) {
+            return pw.Container(
+              width: 20,
+              height: (e / 5).clamp(10, 100),
+              color: PdfColor(0, 0.7, 0),
+            );
+          }).toList(),
+        ),
+      ],
+    ),
+  );
+
+  /// 🔥 REAL DOWNLOAD PATH
+  final directory = Directory("/storage/emulated/0/Download");
+
+  if (!await directory.exists()) {
+    await directory.create(recursive: true);
+  }
+
+  final file = File(
+      "${directory.path}/BudgetBee_${DateTime.now().millisecondsSinceEpoch}.pdf");
+
+  await file.writeAsBytes(await pdf.save());
+
+  return file;
+}
 
   // Future<void> _downloadPdf() async {
 
@@ -1247,36 +1723,36 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
   // }
 
   Future<void> _downloadPdf() async {
+  try {
+    var status = await Permission.storage.request();
 
-  final pdf = pw.Document();
+    if (!status.isGranted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Permission denied")),
+      );
+      return;
+    }
 
-  pdf.addPage(
-    pw.Page(
-      build: (context) => pw.Column(
-        children: [
-          pw.Text("BudgetBee Monthly Report", style: pw.TextStyle(fontSize: 22)),
-          pw.SizedBox(height: 20),
-          pw.Text("Total Income : ₹$totalCredit"),
-          pw.Text("Total Expense : ₹$totalDebit"),
-          pw.Text("Saving : ₹${totalCredit - totalDebit}"),
-        ],
+    final file = await _generatePdf();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Saved in Downloads ✅"),
+        action: SnackBarAction(
+          label: "OPEN",
+          onPressed: () async {
+            await Share.shareXFiles([XFile(file.path)]);
+          },
+        ),
       ),
-    ),
-  );
+    );
+  } catch (e) {
+    print("ERROR: $e");
 
-  final status = await Permission.storage.request();
-
-  if (!status.isGranted) return;
-
-  final directory = Directory('/storage/emulated/0/Download');
-
-  final file = File('${directory.path}/BudgetBee_Report.pdf');
-
-  await file.writeAsBytes(await pdf.save());
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("PDF saved in Downloads folder")),
-  );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Crash happened ❌")),
+    );
+  }
 }
 
   // Future<void> _sharePdf() async {
@@ -1290,15 +1766,25 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
   // }
 
   Future<void> _sharePdf() async {
+  try {
+    final file = await _generatePdf();
 
-    final directory = Directory('/storage/emulated/0/Download');
-    final file = File('${directory.path}/BudgetBee_Report.pdf');
+    print("PDF PATH: ${file.path}"); // 🔥 debug
 
     await Share.shareXFiles(
       [XFile(file.path)],
       text: "My BudgetBee Monthly Report",
     );
+
+  } catch (e) {
+    print("ERROR: $e");
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error sharing PDF")),
+    );
   }
+}
+
   String _currentMonth(){
 
     final now=DateTime.now();

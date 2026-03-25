@@ -20,6 +20,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     DateTime now = DateTime.now();
 
     return data.where((e) {
+      if (e['date'] == null) return false;  
       DateTime d = DateTime.parse(e['date']);
 
       if (filter == "weekly") {
@@ -36,7 +37,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     for (var e in data) {
       map[e['category']] =
-          (map[e['category']] ?? 0) + e['amount'];
+          (map[e['category']] ?? 0) + (e['amount'] ?? 0);
     }
 
     return map;
@@ -49,10 +50,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
     int i = 0;
 
     for (var e in data) {
-      String cat = e['category'];
+      String cat = e['category'] ?? "Unknown";
 
       map.putIfAbsent(cat, () => []);
-      map[cat]!.add(FlSpot(i.toDouble(), e['amount'].toDouble()));
+      map[cat]!.add(FlSpot(i.toDouble(), (e['amount'] ?? 0).toDouble()));
       i++;
     }
 
@@ -137,7 +138,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   return ListTile(
                     title: Text(e['category']),
                     subtitle: Text(e['note'] ?? ""),
-                    trailing: Text("₹ ${e['amount']}"),
+                    trailing: Text("₹ ${e['amount'] ?? 0}"),
                   );
                 }).toList(),
               ),
