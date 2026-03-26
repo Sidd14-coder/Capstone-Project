@@ -19,7 +19,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   List<String> categories = [
     "Food","Health","Grocery","Bills","Dining","Education",
-    "Fuel","Gadgets","Shopping","Travel","Misc"
+    "Fuel","Gadgets","Shopping","Travel","Misc","Others"
   ];
 
   Map<String, IconData> categoryIcons = {
@@ -34,6 +34,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   "Shopping": Icons.shopping_bag,
   "Travel": Icons.flight,
   "Misc": Icons.category,
+  "Others": Icons.more_horiz,
 };
 
   /// SAVE TO HIVE
@@ -101,121 +102,201 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFBFD8C3),
-
+      backgroundColor: const Color(0xFFE8F5E9), // Light green background
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E6F5C),
-        title: const Text("Add Transaction"),
+        backgroundColor: const Color(0xFF1E6F5C), // Dark green theme
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "Custom Transactions",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
       ),
-
       body: Column(
         children: [
-
-          /// TOP FORM
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-
-                /// TYPE
-                DropdownButtonFormField(
-                  value: type,
-                  items: ["Credit","Debit"]
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (v) => setState(() => type = v!),
-                  decoration: const InputDecoration(labelText: "Select type"),
-                ),
-
-                const SizedBox(height: 10),
-
-                /// ACCOUNT
-                DropdownButtonFormField(
-                  value: account,
-                  items: ["UPI","Cash"]
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (v) => setState(() => account = v!),
-                  decoration: const InputDecoration(labelText: "Select A/C"),
-                ),
-
-                const SizedBox(height: 10),
-
-                /// DESCRIPTION
-                TextField(
-                  controller: desc,
-                  decoration: const InputDecoration(
-                    labelText: "Description",
-                    hintText: "Shop, brand name",
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                /// CATEGORY
-                ListTile(
-                  leading: Icon(categoryIcons[category], color: Colors.green),
-                  title: Text(category),
-                  trailing: const Icon(Icons.arrow_drop_down),
-                  onTap: openCategoryPicker,
-                ),
-
-                const SizedBox(height: 10),
-
-                /// DATE + AMOUNT
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "${DateTime.now().day}/${DateTime.now().month}",
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // --- TRANSACTION TYPE DROPDOWN ---
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                    SizedBox(
-  width: 120,
-  child: TextField(
-    controller: amountController,
-    keyboardType: const TextInputType.numberWithOptions(decimal: true), // 🔥 number keyboard
-    decoration: const InputDecoration(
-      prefixText: "₹ ",
-      hintText: "0",
-    ),
-  ),
-),
-                  ],
-                ),
-              ],
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: type,
+                        isExpanded: true,
+                        items: ["Credit", "Debit"]
+                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (v) => setState(() => type = v!),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // --- ACCOUNT TYPE DROPDOWN ---
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: account,
+                        isExpanded: true,
+                        items: ["UPI", "Cash"]
+                            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                            .toList(),
+                        onChanged: (v) => setState(() => account = v!),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // --- DESCRIPTION ---
+                  const Text(
+                    "Description",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E6F5C),
+                    ),
+                  ),
+                  TextField(
+                    controller: desc,
+                    decoration: const InputDecoration(
+                      hintText: "Name of shop, brand",
+                      hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF1E6F5C), width: 2),
+                      ),
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // --- CATEGORY ---
+                  const Text(
+                    "Category",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E6F5C),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: openCategoryPicker,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: const BoxDecoration(
+                        border: Border(bottom: BorderSide(color: Colors.grey)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            categoryIcons[category] ?? Icons.category,
+                            color: const Color(0xFF1E6F5C),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            category == "Select Category" ? "Choose Category" : category,
+                            style: const TextStyle(fontSize: 16, color: Colors.black87),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // --- DATE AND AMOUNT ---
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      // Date
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Today ${TimeOfDay.now().format(context)}",
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF1E6F5C),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Amount
+                      Expanded(
+                        child: TextField(
+                          controller: amountController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          decoration: const InputDecoration(
+                            prefixText: "₹   ",
+                            prefixStyle: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Color(0xFF1E6F5C), width: 2),
+                            ),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
 
-          const Divider(),
-
-          /// KEYPAD
-          
-
-          /// BUTTONS
-          Row(
-            children: [
-
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("CANCEL"),
+          // --- STICKY SAVE BUTTON ---
+          SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E6F5C),
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              ),
+              onPressed: saveTransaction,
+              child: const Text(
+                "SAVE",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
                 ),
               ),
-
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
-                  onPressed: saveTransaction,
-                  child: const Text("OK"),
-                ),
-              ),
-            ],
-          )
+            ),
+          ),
         ],
       ),
     );

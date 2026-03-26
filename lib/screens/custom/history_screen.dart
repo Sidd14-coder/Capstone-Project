@@ -31,6 +31,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     "Shopping": Icons.shopping_bag,
     "Travel": Icons.flight,
     "Misc": Icons.category,
+    "Others": Icons.more_horiz,
   };
 
   /// COLORS
@@ -73,19 +74,19 @@ class _HistoryScreenState extends State<HistoryScreen>
 
     DateTime now = DateTime.now();
 
-    return data.where((e) {
+    var filtered = data.where((e) {
       if (e['date'] == null) return false;
       DateTime d = DateTime.parse(e['date']);
-
-      bool dateFilter = filter == "weekly"
-          ? d.isAfter(now.subtract(const Duration(days: 7)))
-          : (d.month == now.month && d.year == now.year);
-
-      bool categoryFilter =
-          selectedCategory == "All" || e['category'] == selectedCategory;
-
-      return dateFilter && categoryFilter;
+      return d.isAfter(now.subtract(const Duration(days: 30)));
     }).toList();
+
+    filtered.sort((a, b) {
+      DateTime dA = DateTime.parse(a['date']);
+      DateTime dB = DateTime.parse(b['date']);
+      return dB.compareTo(dA);
+    });
+
+    return filtered;
   }
 
   void deleteTransaction(dynamic key) {
@@ -111,9 +112,11 @@ class _HistoryScreenState extends State<HistoryScreen>
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: "Amount"),
               ),
               TextField(
                 controller: noteController,
+                decoration: const InputDecoration(labelText: "Description"),
               ),
             ],
           ),
@@ -125,7 +128,6 @@ class _HistoryScreenState extends State<HistoryScreen>
             ElevatedButton(
               onPressed: () {
                 var box = Hive.box('customTransactions');
-
                 box.put(e['key'], {
                   "type": e['type'],
                   "account": e['account'],
@@ -134,7 +136,6 @@ class _HistoryScreenState extends State<HistoryScreen>
                   "note": noteController.text,
                   "date": e['date'],
                 });
-
                 Navigator.pop(context);
                 setState(() {});
               },
@@ -149,227 +150,215 @@ class _HistoryScreenState extends State<HistoryScreen>
   Map<String, double> getCategoryData(List data) {
     Map<String, double> map = {};
     for (var e in data) {
-      map[e['category']] =
-          (map[e['category']] ?? 0) + (e['amount'] ?? 0);
+      map[e['category']] = (map[e['category']] ?? 0) + (e['amount'] ?? 0);
     }
     return map;
   }
 
-  List<LineChartBarData> getLineData(List data) {
-  Map<String, List<FlSpot>> map = {};
-  int i = 0;
-
-  for (var e in data) {
-    String cat = e['category'] ?? "Unknown";
-
-    map.putIfAbsent(cat, () => []);
-    map[cat]!.add(
-      FlSpot(
-        i.toDouble(),
-        (e['amount'] ?? 0).toDouble(),
-      ),
-    );
-    i++;
-  }
-
-  int index = 0;
-
-  return map.entries.map((entry) {
-    Color color = chartColors[index % chartColors.length];
-    index++;
-
-    return LineChartBarData(
-      spots: entry.value,
-
-      /// 🔥 MAIN FIX (LINE SMOOTH + VISIBLE)
-      isCurved: true,
-      curveSmoothness: 0.5,
-      barWidth: 5,
-      color: color,
-
-      /// ❌ REMOVE DOTS (THIS WAS YOUR ISSUE)
-      dotData: FlDotData(show: false),
-
-      /// ✅ CLEAN LINE STYLE
-      isStrokeCapRound: true,
-
-      /// 🔥 AREA UNDER LINE
-      belowBarData: BarAreaData(
-        show: true,
-        gradient: LinearGradient(
-          colors: [
-            color.withOpacity(0.3),
-            Colors.transparent,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-    );
-  }).toList();
-}
-
-  double getTotal(List data) {
-    double total = 0;
+  Map<String, Color> getCategoryColorMap(List data) {
+    Map<String, Color> map = {};
+    int index = 0;
     for (var e in data) {
-      total += (e['amount'] ?? 0);
+      String cat = e['category'] ?? "Unknown";
+      if (!map.containsKey(cat)) {
+        map[cat] = chartColors[index % chartColors.length];
+        index++;
+      }
     }
-    return total;
+    return map;
   }
 
-  /// 🔥 GRAPH TAP DETAIL
-  void showGraphDetail(String title, Widget chart) {
-    showDialog(
-      context: context,
-      builder: (_) {
-        return Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            height: 300,
-            child: Column(
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 20),
-                Expanded(child: chart),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+  String formatCustomDate(String isoDate) {
+    DateTime d = DateTime.parse(isoDate);
+    List<String> days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    List<String> months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    String day = days[d.weekday - 1];
+    String month = months[d.month - 1];
+    
+    int h = d.hour;
+    int m = d.minute;
+    String ampm = h >= 12 ? 'pm' : 'am';
+    h = h % 12;
+    if (h == 0) h = 12;
+    String mStr = m < 10 ? '0$m' : '$m';
+
+    bool isToday = d.day == DateTime.now().day && d.month == DateTime.now().month && d.year == DateTime.now().year;
+
+    if (isToday) return "Today, $h:$mStr $ampm";
+    return "$day, ${d.day}-$month";
   }
 
   @override
   Widget build(BuildContext context) {
     List data = getFilteredData();
     var categoryData = getCategoryData(data);
-    double total = getTotal(data);
-
-    if (data.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("Custom History & Analytics"),
-          backgroundColor: const Color(0xFF1E6F5C),
-        ),
-        body: const Center(child: Text("No transactions found")),
-      );
-    }
+    var colorMap = getCategoryColorMap(data);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFBFD8C3),
+      backgroundColor: const Color(0xFFE8F5E9),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E6F5C),
-        title: const Text("Custom History & Analytics"),
-      ),
-      body: FadeTransition(
-        opacity: _controller,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              /// TOTAL
-              Card(
-                child: ListTile(
-                  title: const Text("Total Spending"),
-                  trailing: Text("₹ ${total.toStringAsFixed(2)}"),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              /// TRANSACTIONS
-              Card(
-                child: Column(
-                  children: data.map((e) {
-                    return ListTile(
-                      leading: Icon(
-                        categoryIcons[e['category']] ?? Icons.category,
-                      ),
-                      title: Text(e['category']),
-                      subtitle: Text(e['note'] ?? ""),
-                      trailing: Text("₹ ${e['amount'] ?? 0}"),
-                      onTap: () => editTransaction(e),
-                      onLongPress: () => deleteTransaction(e['key']),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              /// PIE (CLICKABLE)
-              GestureDetector(
-                onTap: () => showGraphDetail(
-                  "Spending Breakdown",
-                  PieChart(
-                    PieChartData(
-                      sections: categoryData.entries
-                          .toList()
-                          .asMap()
-                          .entries
-                          .map((entry) {
-                        int i = entry.key;
-                        var e = entry.value;
-
-                        return PieChartSectionData(
-                          value: e.value,
-                          title: "₹${e.value.toInt()}",
-                          color: chartColors[i % chartColors.length],
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-                child: SizedBox(
-                  height: 200,
-                  child: PieChart(
-                    PieChartData(
-                      sections: categoryData.entries
-                          .toList()
-                          .asMap()
-                          .entries
-                          .map((entry) {
-                        int i = entry.key;
-                        var e = entry.value;
-
-                        return PieChartSectionData(
-                          value: e.value,
-                          title: "",
-                          color: chartColors[i % chartColors.length],
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              /// LINE (CLICKABLE)
-              GestureDetector(
-                onTap: () => showGraphDetail(
-                  "Trend Graph",
-                  LineChart(
-                    LineChartData(lineBarsData: getLineData(data)),
-                  ),
-                ),
-                child: SizedBox(
-                  height: 250,
-                  child: LineChart(
-                    LineChartData(lineBarsData: getLineData(data)),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "History & Analytics",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
+      body: data.isEmpty
+          ? const Center(child: Text("No transactions in the last 30 days.", style: TextStyle(fontSize: 16)))
+          : FadeTransition(
+              opacity: _controller,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    
+                    /// RECENT TRANSACTIONS CARD
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ]
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Text(
+                              "Recent Transactions",
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const Divider(height: 1, thickness: 1),
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: data.length,
+                            separatorBuilder: (context, index) => const Divider(height: 1, thickness: 1),
+                            itemBuilder: (context, index) {
+                              var e = data[index];
+                              Color iconColor = colorMap[e['category']] ?? Colors.grey;
+                              return ListTile(
+                                leading: Icon(
+                                  categoryIcons[e['category']] ?? Icons.category,
+                                  color: iconColor,
+                                  size: 30,
+                                ),
+                                title: Text(e['category'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                                subtitle: Text(formatCustomDate(e['date']), style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                trailing: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      "${e['amount'] ?? 0}",
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
+                                    Text(
+                                      e['account'] ?? "UPI",
+                                      style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                                onTap: () => editTransaction(e),
+                                onLongPress: () => deleteTransaction(e['key']),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    /// SPENDING BREAKDOWN CARD
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ]
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Text(
+                              "Spending Breakdown",
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const Divider(height: 1, thickness: 1),
+                          const SizedBox(height: 20),
+                          
+                          // PIE CHART
+                          SizedBox(
+                            height: 200,
+                            child: PieChart(
+                              PieChartData(
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 50,
+                                sections: categoryData.entries.map((entry) {
+                                  return PieChartSectionData(
+                                    value: entry.value,
+                                    title: "",
+                                    color: colorMap[entry.key],
+                                    radius: 40,
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                          
+                          
+                          const SizedBox(height: 30),
+
+                          // LEGEND (Dynamic Row/Wrap)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            child: Wrap(
+                              spacing: 16,
+                              runSpacing: 8,
+                              alignment: WrapAlignment.center,
+                              children: colorMap.entries.map((entry) {
+                                return Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircleAvatar(radius: 5, backgroundColor: entry.value),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      entry.key,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }

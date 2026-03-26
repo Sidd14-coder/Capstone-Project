@@ -61,3 +61,6 @@ Map<String, int> bankLastSmsTime = {};
 
 // All parsed transactions from SMS
 List<TransactionModel> allTransactions = [];
+
+// Chatbot session memory
+List<Map<String, String>> globalChatMessages = [];

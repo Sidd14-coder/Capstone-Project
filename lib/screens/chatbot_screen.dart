@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:url_launcher/url_launcher.dart'; // 🔥 url_launcher ADDED
 import '../services/gemini_service.dart';
 import '../data/user_finance_data.dart';
 import '../services/user_service.dart';
+import '../globals.dart';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -12,52 +15,69 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController controller = TextEditingController();
-  List<Map<String, String>> messages = [];
+  final ScrollController _scrollController = ScrollController();
 
   @override
-void initState() {
-  super.initState();
-  loadWelcomeMessage();
-}
-
-void loadWelcomeMessage() async {
-  var user = getUserFromHive();
-
-  String name = "User";
-
-  if (user != null && user['name'] != null) {
-    name = user['name'].toString().split(" ")[0]; // first name
+  void initState() {
+    super.initState();
+    if (globalChatMessages.isEmpty) {
+      loadWelcomeMessage();
+    }
   }
 
-  setState(() {
-    messages.add({
-      "role": "bot",
-      "text":
-          "Hello $name 👋\nI'm your BudgetBee assistant.\n\n1️⃣ Analyze my spending\n2️⃣ Saving tips\n3️⃣ Investment ideas\n4️⃣ Budget advice"
+  void scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
-  });
-}
+  }
+
+  void loadWelcomeMessage() async {
+    var user = getUserFromHive();
+    String name = "User";
+
+    if (user != null && user['name'] != null) {
+      name = user['name'].toString().split(" ")[0]; // first name
+    }
+
+    setState(() {
+      globalChatMessages.add({
+        "role": "bot",
+        "text":
+            "Hello $name 👋\nI'm your BudgetBee assistant.\n\n1️⃣ Analyze my spending\n2️⃣ Saving tips\n3️⃣ Investment ideas\n4️⃣ Budget advice"
+      });
+    });
+  }
 
   void sendMessage(String text) async {
-  setState(() {
-    messages.add({"role": "user", "text": text});
-    messages.add({"role": "bot", "text": "Typing..."}); // 🔥 loading
-  });
+    setState(() {
+      globalChatMessages.add({"role": "user", "text": text});
+      globalChatMessages.add({"role": "bot", "text": "Typing..."}); // 🔥 loading
+      controller.clear(); // CRITICAL: Clear immediately
+    });
+    scrollToBottom();
 
-  final data = await getUserFinanceData();
+    final data = await getUserFinanceData();
 
-  String reply = await GeminiService.getAIResponse(
-    userMessage: text,
-    userData: data,
-  );
+    String reply = await GeminiService.getAIResponse(
+      userMessage: text,
+      userData: data,
+      chatHistory: globalChatMessages, // 🔥 Passed chat history
+    );
 
-  setState(() {
-    messages.removeLast(); // remove "Typing..."
-    messages.add({"role": "bot", "text": reply});
-  });
-
-  controller.clear();
-}
+    if (mounted) {
+      setState(() {
+        globalChatMessages.removeLast(); // remove "Typing..."
+        globalChatMessages.add({"role": "bot", "text": reply});
+      });
+      scrollToBottom();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,8 +91,9 @@ void loadWelcomeMessage() async {
         children: [
           Expanded(
             child: ListView(
+              controller: _scrollController,
               padding: const EdgeInsets.all(10),
-              children: messages.map((msg) {
+              children: globalChatMessages.map((msg) {
   return Align(
     alignment: msg["role"] == "user"
         ? Alignment.centerRight
@@ -89,10 +110,36 @@ void loadWelcomeMessage() async {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(msg["text"]!),
+          msg["role"] == "user"
+              ? Text(
+                  msg["text"]!,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                )
+                : MarkdownBody(
+                    data: msg["text"]!,
+                    // 🔥 LINK CLICK HANDLER
+                    onTapLink: (text, href, title) async {
+                      if (href != null) {
+                        try {
+                          await launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+                        } catch (e) {
+                          debugPrint("Could not launch $href: $e");
+                        }
+                      }
+                    },
+                    styleSheet: MarkdownStyleSheet(
+                      p: const TextStyle(fontSize: 16, height: 1.4, color: Colors.black87),
+                      a: const TextStyle(fontSize: 16, color: Colors.blue, decoration: TextDecoration.underline), // 🔥 Links made visually clickable
+                      strong: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E6F5C)),
+                      listBullet: const TextStyle(fontSize: 18, color: Color(0xFF1E6F5C)),
+                      h1: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF0D47A1)),
+                      h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
+                      h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
+                    ),
+                  ),
 
           // 🔥 ONLY FIRST MESSAGE → SHOW OPTIONS
-          if (msg == messages.first && msg["role"] == "bot")
+          if (msg == globalChatMessages.first && msg["role"] == "bot")
             Wrap(
               spacing: 8,
               children: [

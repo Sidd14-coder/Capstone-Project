@@ -31,23 +31,13 @@ class DebitCreditBarChart extends StatelessWidget {
 
       // 🔥 NEW BACKGROUND LOOK
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withOpacity(0.92),
-            const Color(0xFFF3F6FF),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.6),
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -130,8 +120,8 @@ class DebitCreditBarChart extends StatelessWidget {
                       value.toInt() == 0 ? 'Debit' : 'Credit',
                       style: const TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color.fromARGB(221, 37, 11, 188),
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF114F2E),
                       ),
                     ),
                   );
@@ -147,20 +137,13 @@ class DebitCreditBarChart extends StatelessWidget {
               barRods: [
                 BarChartRodData(
                   toY: totalDebit,
-                  width: 54,
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFFFF8A80),
-                      Color(0xFFD32F2F),
-                    ],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                  ),
-                  borderRadius: BorderRadius.circular(2),
+                  width: 50,
+                  color: const Color(0xFFFF1818),
+                  borderRadius: BorderRadius.zero,
                   backDrawRodData: BackgroundBarChartRodData(
                     show: true,
                     toY: maxY,
-                    color: Colors.red.withOpacity(0.07),
+                    color: const Color(0xFFFF1818).withOpacity(0.2),
                   ),
                 ),
               ],
@@ -170,20 +153,13 @@ class DebitCreditBarChart extends StatelessWidget {
               barRods: [
                 BarChartRodData(
                   toY: totalCredit,
-                  width: 54,
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF81C784),
-                      Color(0xFF2E7D32),
-                    ],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                  ),
-                  borderRadius: BorderRadius.circular(2),
+                  width: 50,
+                  color: const Color(0xFF00E600),
+                  borderRadius: BorderRadius.zero,
                   backDrawRodData: BackgroundBarChartRodData(
                     show: true,
                     toY: maxY,
-                    color: Colors.green.withOpacity(0.07),
+                    color: const Color(0xFF00E600).withOpacity(0.2),
                   ),
                 ),
               ],

@@ -46,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           type: BottomNavigationBarType.fixed,
 
           // 🎨 COLORS
-          selectedItemColor: const Color(0xFF0A33FF),
+          selectedItemColor: const Color(0xFF1E6F5C),
           unselectedItemColor: Colors.grey.shade500,
 
           // 🖋 TEXT STYLE
