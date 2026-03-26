@@ -358,16 +358,15 @@
 //   }
 
 //     return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: const Color(0xFFF4F8FB),
-      appBar: AppBar(
-        title: const Text('Transactions'),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      floatingActionButton: const ChatbotFab(),
-      body: Stack(
+//       extendBodyBehindAppBar: true,
+//       backgroundColor: const Color(0xFFF4F8FB),
+//       appBar: AppBar(
+//         title: const Text('Transactions'),
+//         centerTitle: true,
+//         backgroundColor: Colors.transparent,
+//         elevation: 0,
+//       ),
+//       body: Stack(
 //       children: [
 
 //         // 🖼 FULL BACKGROUND IMAGE

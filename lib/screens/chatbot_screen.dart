@@ -37,6 +37,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
   }
 
+
   void loadWelcomeMessage() async {
     var user = getUserFromHive();
     String name = "User";
@@ -79,131 +80,229 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF2F7D5B),
-      appBar: AppBar(
-        title: const Text("BudgetBee Assistant"),
-        backgroundColor: const Color(0xFF2F7D5B),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(10),
-              children: globalChatMessages.map((msg) {
-  return Align(
-    alignment: msg["role"] == "user"
-        ? Alignment.centerRight
-        : Alignment.centerLeft,
-    child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: msg["role"] == "user"
-            ? Colors.green
-            : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          msg["role"] == "user"
-              ? Text(
-                  msg["text"]!,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                )
-                : MarkdownBody(
-                    data: msg["text"]!,
-                    // 🔥 LINK CLICK HANDLER
-                    onTapLink: (text, href, title) async {
-                      if (href != null) {
-                        try {
-                          await launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
-                        } catch (e) {
-                          debugPrint("Could not launch $href: $e");
-                        }
-                      }
-                    },
-                    styleSheet: MarkdownStyleSheet(
-                      p: const TextStyle(fontSize: 16, height: 1.4, color: Colors.black87),
-                      a: const TextStyle(fontSize: 16, color: Colors.blue, decoration: TextDecoration.underline), // 🔥 Links made visually clickable
-                      strong: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E6F5C)),
-                      listBullet: const TextStyle(fontSize: 18, color: Color(0xFF1E6F5C)),
-                      h1: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF0D47A1)),
-                      h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
-                      h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
-                    ),
-                  ),
-
-          // 🔥 ONLY FIRST MESSAGE → SHOW OPTIONS
-          if (msg == globalChatMessages.first && msg["role"] == "bot")
-            Wrap(
-              spacing: 8,
-              children: [
-                optionButton("Analyze my spending"),
-                optionButton("Saving tips"),
-                optionButton("Investment ideas"),
-                optionButton("Budget advice"),
-              ],
+  Widget _buildActionCard(String title, String actionText) {
+    return GestureDetector(
+      onTap: () => sendMessage(actionText),
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             )
-        ],
-      ),
-    ),
-  );
-}).toList(),
-            ),
-          ),
-
-          Padding(
-  padding: const EdgeInsets.all(10),
-  child: Row(
-    children: [
-      Expanded(
-        child: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: "Ask anything...",
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(25),
-              borderSide: BorderSide.none,
-            ),
-          ),
+          ],
         ),
-      ),
-      const SizedBox(width: 8),
-      CircleAvatar(
-        backgroundColor: Colors.green,
-        child: IconButton(
-          icon: const Icon(Icons.send, color: Colors.white),
-          onPressed: () {
-            if (controller.text.trim().isNotEmpty) {
-              sendMessage(controller.text.trim());
-            }
-          },
+        child: Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
-      )
-    ],
-  ),
-)
-        ],
       ),
     );
   }
 
-  Widget optionButton(String text) {
-  return ElevatedButton(
-    onPressed: () {
-        sendMessage(text); // 👈 button ka text bhejna hai
-},
-    child: Text(text),
-  );
-}
+  Widget _buildWelcomeHeader() {
+    String name = "User";
+    var user = getUserFromHive();
+    if (user != null && user['name'] != null) {
+      name = user['name'].toString().split(" ")[0];
+    }
+    
+    var hour = DateTime.now().hour;
+    String greeting = "Good Morning";
+    if (hour >= 12 && hour < 17) greeting = "Good Afternoon";
+    else if (hour >= 17) greeting = "Good Evening";
 
+    return Column(
+      children: [
+        const SizedBox(height: 40),
+        Container(
+          width: 110,
+          height: 110,
+          decoration: const BoxDecoration(
+            color: Color(0xFF130130),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+             child: Image.asset('assets/icons/chatbot.png', width: 60, height: 60),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          "$greeting, $name",
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+        const SizedBox(height: 30),
+        _buildActionCard("📊 Show my spending", "Analyze my spending"),
+        _buildActionCard("💰 Investment ideas", "Investment ideas"),
+        _buildActionCard("⚠️ Am I overspending?", "Budget advice"),
+        _buildActionCard("📅 Weekly report", "Weekly report"),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFE8F2EC),
+      appBar: AppBar(
+        title: const Text("BudgetBee Assistant", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white)),
+        backgroundColor: const Color(0xFF1E6F5C),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {},
+          )
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Background Image
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/bd_whatsapp.jpeg'),
+                fit: BoxFit.cover,
+                opacity: 0.25,
+              ),
+            ),
+          ),
+          Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(10),
+                  children: globalChatMessages.map((msg) {
+                    // INTERCEPT FIRST SYSTEM MESSAGE TO SHOW CUSTOM UI
+                    if (msg == globalChatMessages.first && msg["role"] == "bot" && (msg["text"]?.contains("Hello") ?? false)) {
+                      return _buildWelcomeHeader();
+                    }
+
+                    return Align(
+                      alignment: msg["role"] == "user"
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: msg["role"] == "user"
+                              ? const Color(0xFF1E6F5C)
+                              : Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(16),
+                            topRight: const Radius.circular(16),
+                            bottomLeft: Radius.circular(msg["role"] == "user" ? 16 : 0),
+                            bottomRight: Radius.circular(msg["role"] == "user" ? 0 : 16),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            msg["role"] == "user"
+                                ? Text(
+                                    msg["text"]!,
+                                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                                  )
+                                : MarkdownBody(
+                                    data: msg["text"]!,
+                                    onTapLink: (text, href, title) async {
+                                      if (href != null) {
+                                        try {
+                                          await launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+                                        } catch (e) {
+                                          debugPrint("Could not launch $href: $e");
+                                        }
+                                      }
+                                    },
+                                    styleSheet: MarkdownStyleSheet(
+                                      p: const TextStyle(fontSize: 16, height: 1.4, color: Colors.black87),
+                                      a: const TextStyle(fontSize: 16, color: Colors.blue, decoration: TextDecoration.underline),
+                                      strong: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E6F5C)),
+                                      listBullet: const TextStyle(fontSize: 18, color: Color(0xFF1E6F5C)),
+                                    ),
+                                  ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              // BOTTOM INPUT FIELD
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 5,
+                              offset: const Offset(0, 2),
+                            )
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: TextField(
+                                controller: controller,
+                                decoration: const InputDecoration(
+                                  hintText: "Message..",
+                                  hintStyle: TextStyle(fontSize: 16, color: Colors.black54),
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF1E6F5C),
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.send, color: Colors.white, size: 20),
+                                onPressed: () {
+                                  if (controller.text.trim().isNotEmpty) {
+                                    sendMessage(controller.text.trim());
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
