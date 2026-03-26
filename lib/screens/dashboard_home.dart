@@ -380,6 +380,7 @@ import 'analytics_screen.dart';
 import '../data/refresh_totals.dart';
 import 'monthly_report_screen.dart'; // ADDED
 import 'custom/custom_transactions_screen.dart';
+import 'chatbot_screen.dart';
 
 class DashboardHome extends StatefulWidget {
   const DashboardHome({super.key});
@@ -430,17 +431,46 @@ class _DashboardHomeState extends State<DashboardHome> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F8FB),
 
-      floatingActionButton: FloatingActionButton(
-  backgroundColor: const Color(0xFF1E6F5C),
-  child: const Icon(Icons.add, color: Colors.white),
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const CustomTransactionsScreen(),
+      floatingActionButton: Stack(
+  children: [
+    // 🤖 CHATBOT BUTTON (UPPER)
+    Positioned(
+      bottom: 90,
+      right: 20,
+      child: FloatingActionButton(
+        heroTag: "chatbot",
+        backgroundColor: Colors.black,
+        child: const Icon(Icons.smart_toy, color: Colors.white),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ChatbotScreen(),
+            ),
+          );
+        },
       ),
-    ).then((_) => _loadData()); // 🔥 refresh after coming back
-  },
+    ),
+
+    // ➕ EXISTING PLUS BUTTON
+    Positioned(
+      bottom: 20,
+      right: 20,
+      child: FloatingActionButton(
+        heroTag: "add",
+        backgroundColor: const Color(0xFF1E6F5C),
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const CustomTransactionsScreen(),
+            ),
+          ).then((_) => _loadData());
+        },
+      ),
+    ),
+  ],
 ),
 
       // ===== HEADER =====
@@ -791,3 +821,4 @@ class _DashboardHomeState extends State<DashboardHome> {
     );
   }
 }
+

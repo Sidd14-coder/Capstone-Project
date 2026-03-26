@@ -22,21 +22,47 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     "Fuel","Gadgets","Shopping","Travel","Misc"
   ];
 
+  Map<String, IconData> categoryIcons = {
+  "Food": Icons.fastfood,
+  "Health": Icons.health_and_safety,
+  "Grocery": Icons.shopping_cart,
+  "Bills": Icons.receipt,
+  "Dining": Icons.restaurant,
+  "Education": Icons.school,
+  "Fuel": Icons.local_gas_station,
+  "Gadgets": Icons.devices,
+  "Shopping": Icons.shopping_bag,
+  "Travel": Icons.flight,
+  "Misc": Icons.category,
+};
+
   /// SAVE TO HIVE
   void saveTransaction() {
-    var box = Hive.box('customTransactions');
+  var box = Hive.box('customTransactions');
+  print(box.values.toList());
 
-    box.add({
-      "type": type,
-      "account": account,
-      "category": category,
-      "amount": double.tryParse(amount),
-      "note": desc.text,
-      "date": DateTime.now().toString(),
-    });
+  double amt = double.tryParse(amountController.text) ?? 0;
 
-    Navigator.pop(context);
+  if (amt <= 0) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Enter valid amount")),
+    );
+    return;
   }
+
+  box.add({
+    "type": type,
+    "account": account,
+    "category": category,
+    "amount": amt,
+    "note": desc.text,
+    "date": DateTime.now().toString(),
+  });
+
+  print("Saved: $amt"); // debug
+
+  Navigator.pop(context);
+}
 
   /// CATEGORY PICKER
   void openCategoryPicker() {
@@ -53,8 +79,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 Navigator.pop(context);
               },
               child: Card(
-                child: Center(child: Text(cat)),
-              ),
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Icon(categoryIcons[cat], size: 30, color: Colors.green),
+      const SizedBox(height: 5),
+      Text(cat),
+    ],
+  ),
+),
             );
           }).toList(),
         );
@@ -121,6 +154,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                 /// CATEGORY
                 ListTile(
+                  leading: Icon(categoryIcons[category], color: Colors.green),
                   title: Text(category),
                   trailing: const Icon(Icons.arrow_drop_down),
                   onTap: openCategoryPicker,

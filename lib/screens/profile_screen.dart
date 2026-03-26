@@ -9,6 +9,7 @@ import 'saving_ideas_screen.dart';
 import 'package:share_plus/share_plus.dart';
 import '../data/refresh_totals.dart';
 import 'emi/emi_tracker_card.dart';
+import '../services/user_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -21,8 +22,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+
+    loadUser(); // 🔥 ADD THIS
     _loadProfileData();
   }
+
+  void loadUser() {
+  var user = getUserFromHive();
+
+  if (user != null) {
+    loggedInUserName = user['name'] ?? '';
+    loggedInUserEmail = user['email'] ?? '';
+  }
+}
 
   Future<void> _loadProfileData() async {
     await refreshTotals();

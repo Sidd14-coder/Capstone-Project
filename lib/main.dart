@@ -24,6 +24,8 @@ void main() async {
 
   await Hive.openBox('customTransactions');
 
+  await Hive.openBox('userBox');
+
   // ✅ REQUEST SMS PERMISSION ONCE AT APP START
   final telephony = Telephony.instance;
   await telephony.requestSmsPermissions;

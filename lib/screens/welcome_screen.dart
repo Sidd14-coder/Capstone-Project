@@ -3,6 +3,7 @@ import '../services/google_auth_service.dart';
 import 'dashboard_screen.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
+import '../services/user_service.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -90,6 +91,10 @@ class WelcomeScreen extends StatelessWidget {
                               await GoogleAuthService.signInWithGoogle();
 
                           if (user != null && context.mounted) {
+
+                            //ADD THIS LINE
+                            saveUserToHive(user.displayName ?? '', user.email ?? '');
+
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
