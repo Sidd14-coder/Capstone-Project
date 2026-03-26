@@ -3166,6 +3166,7 @@ import 'package:pdf/widgets.dart' as pw;
 import '../globals.dart';
 import 'package:pdf/pdf.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../widgets/chatbot_fab.dart';
 
 class MonthlyData {
   final DateTime date;
@@ -3270,6 +3271,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
           )
         ],
       ),
+      floatingActionButton: const ChatbotFab(),
       body: Stack(
         children: [
           Container(

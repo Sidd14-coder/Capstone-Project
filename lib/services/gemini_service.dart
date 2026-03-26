@@ -13,41 +13,28 @@ class GeminiService {
       final url = "https://text.pollinations.ai/";
 
       String prompt = """
-You are "BudgetBee Assistant", an intelligent AI financial advisor integrated directly inside the "BudgetBee" App.
+You are BudgetBee Assistant, an expert AI financial advisor inside the BudgetBee app.
+Rules:
+1. Provide accurate, descriptive financial advice tailored to the user's data.
+2. Always present information in a highly readable, structured Markdown format (use bullet points, bold text).
+3. If asked for ideas (saving/investing), provide at least 5 distinct and practical options with realistic links (e.g., [Groww](https://groww.in/)).
+4. DO NOT provide generic definitions. Focus purely on actionable advice based on their data.
 
-Strict Rules for Response:
-1. ANSWER DIRECTLY: If the user asks for transactions, give them the transactions.
-2. NO DEFINITIONS: Do NOT explain what a mutual fund or SIP is.
-3. FIVE OPTIONS MINIMUM: If asked for SIPs, investments, or saving ideas, you MUST provide at least 5 different options. Make sure they are DIFFERENT from anything you suggested earlier in the chat.
-4. FULL INFO & LINKS: Do NOT just give names. For each investment/saving option, explain briefly why it's good, expected ROI, risk level, and ALWAYS provide a realistic Markdown URL link where the user can invest (e.g., [Invest via Groww](https://groww.in), Zerodha, or direct AMC website).
-5. FORMATTING: Use strict Markdown. Use **bold** for subheadings and important terms. Use simple bullet points (-). NEVER output ascii lines.
-6. CONTEXT: You know their financial data (provided below).
+[User Financial Context]
+Balance: ₹${userData['balance']} | Income: ₹${userData['income']} | Expenses: ₹${userData['expenses']} | Savings: ₹${userData['savings']}
+Recent Transactions: ${userData['transactions']}
 
-User Data:
-Balance: ₹${userData['balance']}
-Income: ₹${userData['income']}
-Expenses: ₹${userData['expenses']}
-Savings: ₹${userData['savings']}
-
-Top 5 Transactions (from BudgetBee App):
-${userData['transactions']}
-
-Bank Accounts & Balances:
-${userData['bank_details']}
-
-User Question:
+Here is the user's question:
 $userMessage
 """;
 
-      // Reconstruct history to fit Pollinations API schema (system, then user/assistant history, then latest prompt)
       List<Map<String, dynamic>> messages = [
-        {"role": "system", "content": "You are a helpful financial advisor. Return your response in markdown format."},
+        {"role": "system", "content": "You are BudgetBee Assistant, a precise, descriptive, and fast financial advisor."},
       ];
 
-      // Add recent history (up to last 10 messages) to prevent repeating answers
-      int startIdx = chatHistory.length > 10 ? chatHistory.length - 10 : 0;
+      // Keep only last 4 messages to save context limit and increase speed
+      int startIdx = chatHistory.length > 4 ? chatHistory.length - 4 : 0;
       for (int i = startIdx; i < chatHistory.length - 1; i++) {
-        // Skip typing text or anything that isn't true history
         if (chatHistory[i]["text"] != "Typing...") {
           messages.add({
             "role": chatHistory[i]["role"] == "bot" ? "assistant" : "user",
@@ -56,7 +43,6 @@ $userMessage
         }
       }
 
-      // Add the current prompt (which includes user specific data padding)
       messages.add({"role": "user", "content": prompt});
 
       final response = await http.post(
@@ -64,7 +50,7 @@ $userMessage
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "messages": messages,
-          "model": "openai" // Forces usage of fastest available model
+          "model": "searchgpt" // searchgpt often yields longer descriptive but fast results on Pollinations
         }),
       );
 

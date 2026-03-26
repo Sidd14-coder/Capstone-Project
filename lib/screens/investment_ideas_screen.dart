@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../widgets/chatbot_fab.dart';
 
 class InvestmentIdeasScreen extends StatelessWidget {
   const InvestmentIdeasScreen({super.key});
@@ -41,7 +42,7 @@ class InvestmentIdeasScreen extends StatelessWidget {
           ],
         ),
       ),
-
+      floatingActionButton: const ChatbotFab(),
       body: Stack(
         children: [
           Container(

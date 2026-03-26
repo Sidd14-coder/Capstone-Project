@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/chatbot_fab.dart';
 
 class SavingIdeasScreen extends StatelessWidget {
   const SavingIdeasScreen({super.key});
@@ -40,7 +41,7 @@ class SavingIdeasScreen extends StatelessWidget {
           ],
         ),
       ),
-
+      floatingActionButton: const ChatbotFab(),
       body: Stack(
         children: [
           Container(

@@ -358,15 +358,16 @@
 //   }
 
 //     return Scaffold(
-//     extendBodyBehindAppBar: true,
-//     backgroundColor: const Color(0xFFF4F8FB),
-//     appBar: AppBar(
-//       title: const Text('Transactions'),
-//       centerTitle: true,
-//       backgroundColor: Colors.transparent,
-//       elevation: 0,
-//     ),
-//     body: Stack(
+      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFF4F8FB),
+      appBar: AppBar(
+        title: const Text('Transactions'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      floatingActionButton: const ChatbotFab(),
+      body: Stack(
 //       children: [
 
 //         // 🖼 FULL BACKGROUND IMAGE
@@ -619,6 +620,7 @@ import '../services/emi_service.dart';
 import '../services/emi_payment_service.dart';
 import '../models/emi_payment_model.dart';
 import 'package:hive/hive.dart';
+import '../widgets/chatbot_fab.dart';
 
 /* =========================================================
    TRANSACTION PARSER (STRICT – NO FALSE POSITIVES)
@@ -980,6 +982,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
+      floatingActionButton: const ChatbotFab(),
       body: Stack(
         children: [
           Container(

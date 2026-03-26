@@ -229,6 +229,7 @@ import '../widgets/debit_credit_pie.dart';
 import '../widgets/debit_credit_line.dart';
 import '../data/refresh_totals.dart';
 import 'chatbot_screen.dart';
+import '../widgets/chatbot_fab.dart';
 import 'custom/custom_transactions_screen.dart';
 
 class AnalyticsScreen extends StatefulWidget {
@@ -312,59 +313,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ],
         ),
       ),
-      floatingActionButton: Stack(
-        children: [
-          Positioned(
-            bottom: 90,
-            right: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: FloatingActionButton(
-                heroTag: "analytics_chatbot",
-                backgroundColor: const Color(0xFF1E002B),
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Image.asset('assets/icons/chatbot.png'),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ChatbotScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            right: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: FloatingActionButton(
-                heroTag: "analytics_add",
-                backgroundColor: const Color(0xFF1E6F5C),
-                child: const Icon(Icons.add, color: Colors.white, size: 28),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CustomTransactionsScreen(),
-                    ),
-                  ).then((_) => _loadAnalytics());
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
+      floatingActionButton: const ChatbotFab(),
       body: Stack(
         children: [
           Container(
