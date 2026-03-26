@@ -3887,6 +3887,7 @@ import 'package:pdf/widgets.dart' as pw;
 import '../globals.dart';
 import 'package:pdf/pdf.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../widgets/chatbot_fab.dart';
 
 class MonthlyData {
   final DateTime date;
@@ -3961,6 +3962,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F8FB),
+      floatingActionButton: const ChatbotFab(),
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: const Color(0xFF1E6F5C),

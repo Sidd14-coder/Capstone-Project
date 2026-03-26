@@ -2149,6 +2149,7 @@ import 'package:share_plus/share_plus.dart';
 import '../data/refresh_totals.dart';
 import 'emi/emi_tracker_card.dart';
 import '../services/user_service.dart';
+import '../widgets/chatbot_fab.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -2186,6 +2187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: const Color(0xFFEFFFEE), // Very light green bg
       endDrawer: _profileDrawer(context),
       drawerEnableOpenDragGesture: false,
+      floatingActionButton: const ChatbotFab(),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 28),

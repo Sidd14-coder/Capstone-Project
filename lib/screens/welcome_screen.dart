@@ -466,7 +466,8 @@ class WelcomeScreen extends StatelessWidget {
                       offset: const Offset(0, 0), // Pushed right by +60
                       child: Image.asset(
                         'assets/images/ChatGPT Image Jan 31, 2026, 04_15_02 PM.png',
-                        height: 200, // Reduced size
+                        width: size.width * 0.8, // Reduced size to prevent overflow
+                        height: 200,
                         alignment: Alignment.centerLeft,
                         fit: BoxFit.contain,
                       ),
@@ -560,10 +561,10 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset('assets/icons/Google.png', width: 24, height: 24),
-                            const SizedBox(width: 10),
-                            const Text(
+                          children: const [
+                            Icon(Icons.g_mobiledata, size: 28),
+                            SizedBox(width: 10),
+                            Text(
                               'Continue with Google',
                               style: TextStyle(
                                 fontSize: 15,
@@ -600,10 +601,10 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset('assets/icons/Manual.png', width: 24, height: 24),
-                            const SizedBox(width: 10),
-                            const Text(
+                          children: const [
+                            Icon(Icons.person_outline),
+                            SizedBox(width: 10),
+                            Text(
                               'Create Manual Account',
                               style: TextStyle(
                                 fontSize: 15,
