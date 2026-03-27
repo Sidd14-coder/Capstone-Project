@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
-  static const String apiKey = "AIzaSyA4bk6ldx1e1e0-NMfykDun6L8c4c6t58E";
+  static const String apiKey = "AIzaSyBewUXvu02itnnUM-Llur2uUSATzEffmuU";
 
   static Future<String> getAIResponse({
     required String userMessage,
@@ -10,9 +10,9 @@ class GeminiService {
     required List<Map<String, String>> chatHistory,
   }) async {
     try {
-      final url = "https://text.pollinations.ai/";
+      final String endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey";
 
-      String prompt = """
+      String systemInstruction = """
 You are BudgetBee Assistant, an expert AI financial advisor inside the BudgetBee app.
 Rules:
 1. Provide accurate, descriptive financial advice tailored to the user's data.
@@ -24,59 +24,40 @@ Rules:
 [User Financial Context]
 Balance: ₹${userData['balance']} | Income: ₹${userData['income']} | Expenses: ₹${userData['expenses']} | Savings: ₹${userData['savings']}
 Recent Transactions: ${userData['transactions']}
-
-Here is the user's question:
-$userMessage
 """;
 
-      List<Map<String, dynamic>> messages = [
-        {"role": "system", "content": "You are BudgetBee Assistant, a precise financial advisor. DO NOT output markdown tables. Use only bold headings and bullet points. ONLY provide real, working website links."},
-      ];
+      List<Map<String, dynamic>> contents = [];
 
-      // Keep only last 4 messages to save context limit and increase speed
       int startIdx = chatHistory.length > 4 ? chatHistory.length - 4 : 0;
       for (int i = startIdx; i < chatHistory.length - 1; i++) {
         if (chatHistory[i]["text"] != "Typing...") {
-          messages.add({
-            "role": chatHistory[i]["role"] == "bot" ? "assistant" : "user",
-            "content": chatHistory[i]["text"],
+          contents.add({
+            "role": chatHistory[i]["role"] == "bot" ? "model" : "user",
+            "parts": [{"text": chatHistory[i]["text"] ?? ""}],
           });
         }
       }
 
-      messages.add({"role": "user", "content": prompt});
+      contents.add({
+        "role": "user",
+        "parts": [{"text": "System Instructions:\n$systemInstruction\n\nHere is the user's question:\n$userMessage"}],
+      });
 
       final response = await http.post(
-        Uri.parse(url),
+        Uri.parse(endpoint),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "messages": messages,
-          "model": "openai" // openai provides fast, descriptive JSON/Markdown responses
+          "contents": contents,
         }),
       );
 
       print("STATUS CODE: ${response.statusCode}");
-      print("RESPONSE BODY: ${response.body}");
-
       if (response.statusCode == 200) {
-        // Pollinations returns raw text, no json parsing needed
-        String reply = response.body;
-        
-        // 🔥 Remove Pollinations advertisement if present
-        int adIndex = reply.indexOf("Support Pollinations");
-        if (adIndex != -1) {
-          reply = reply.substring(0, adIndex).trim();
+        final data = jsonDecode(response.body);
+        if (data['candidates'] != null && data['candidates'].isNotEmpty) {
+          return data['candidates'][0]['content']['parts'][0]['text'];
         }
-        adIndex = reply.indexOf("🌸 Ad 🌸");
-        if (adIndex != -1) {
-          reply = reply.substring(0, adIndex).trim();
-        }
-        adIndex = reply.indexOf("Powered by Pollinations");
-        if (adIndex != -1) {
-          reply = reply.substring(0, adIndex).trim();
-        }
-
-        return reply;
+        return "I am unable to provide a response at this time.";
       } else {
         return "Failed to get AI response. Status: ${response.statusCode}";
       }

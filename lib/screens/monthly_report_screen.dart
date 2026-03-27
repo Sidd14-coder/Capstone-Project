@@ -4787,6 +4787,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pdf/widgets.dart' as pw;
+import '../widgets/chatbot_fab.dart';
 import '../globals.dart';
 import 'package:pdf/pdf.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -4894,6 +4895,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
           )
         ],
       ),
+      floatingActionButton: const ChatbotFab(),
       body: Stack(
         children: [
           Container(

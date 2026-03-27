@@ -421,6 +421,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import '../../widgets/chatbot_fab.dart';
 import '../chatbot_screen.dart';
 
 import 'add_emi_screen.dart';
@@ -641,18 +642,7 @@ class _ManageEmiScreenState extends State<ManageEmiScreen> {
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen()));
-        },
-        backgroundColor: Colors.white,
-        elevation: 6,
-        shape: const CircleBorder(),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: Image.asset('assets/icons/chatbot.png', fit: BoxFit.cover, width: 44, height: 44),
-        ),
-      ),
+      floatingActionButton: const ChatbotFab(),
     );
   }
 
