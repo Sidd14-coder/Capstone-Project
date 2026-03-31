@@ -23,6 +23,7 @@
 
 //     return Scaffold(
 //       appBar: AppBar(
+        
 //         title: const Text("Manage EMI"),
 //       ),
 //       body: ListView(
@@ -196,6 +197,7 @@
 
 //     return Scaffold(
 //       appBar: AppBar(
+        
 //         title: const Text("Manage EMI"),
 //       ),
 
@@ -423,6 +425,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../../widgets/chatbot_fab.dart';
 import '../chatbot_screen.dart';
+import 'package:animations/animations.dart';
 
 import 'add_emi_screen.dart';
 import 'emi_calculator_screen.dart';
@@ -446,7 +449,8 @@ class _ManageEmiScreenState extends State<ManageEmiScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E6F5C),
+        
+        backgroundColor: const Color(0xFF0A3622),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         title: const Text("Manage EMI", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
@@ -550,8 +554,9 @@ class _ManageEmiScreenState extends State<ManageEmiScreen> {
                                     const SizedBox(width: 12), // Space before delete
                                     GestureDetector(
                                       onTap: () async {
-                                        bool? confirm = await showDialog(
+                                        bool? confirm = await showModal(
                                           context: context,
+                                          configuration: const FadeScaleTransitionConfiguration(),
                                           builder: (context) => AlertDialog(
                                             title: const Text("Delete EMI"),
                                             content: const Text("Are you sure you want to delete this EMI?"),
@@ -584,7 +589,7 @@ class _ManageEmiScreenState extends State<ManageEmiScreen> {
                               ],
                             ),
                             const SizedBox(height: 6),
-                            Text("₹${e['emi']}/month", style: const TextStyle(color: Color(0xFF1E6F5C), fontWeight: FontWeight.w800, fontSize: 13)),
+                            Text("₹${e['emi']}/month", style: const TextStyle(color: Color(0xFF0A3622), fontWeight: FontWeight.w800, fontSize: 13)),
                             const SizedBox(height: 6),
                             Text("Next Due: 5th of every month", style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w500)),
                           ],
@@ -685,7 +690,7 @@ class _ManageEmiScreenState extends State<ManageEmiScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF1E6F5C)),
+            const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF0A3622)),
           ],
         ),
       ),

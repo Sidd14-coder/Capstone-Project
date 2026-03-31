@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:animations/animations.dart';
 import 'dashboard_home.dart';
 import 'transactions_screen.dart';
 import 'profile_screen.dart';
@@ -12,6 +13,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
+  bool _reverse = false; // Add reverse tracker
 
   final List<Widget> _pages = const [
     DashboardHome(),
@@ -22,7 +24,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: PageTransitionSwitcher(
+        duration: const Duration(milliseconds: 500),
+        reverse: _reverse, 
+        transitionBuilder: (child, animation, secondaryAnimation) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.horizontal,
+            child: child,
+          );
+        },
+        child: Container(
+          key: ValueKey<int>(_currentIndex),
+          child: _pages[_currentIndex],
+        ),
+      ),
 
       // ===== PREMIUM BOTTOM NAVIGATION =====
       bottomNavigationBar: Container(
@@ -39,14 +56,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
-            setState(() => _currentIndex = index);
+            if (_currentIndex == index) return;
+            setState(() {
+              _reverse = index < _currentIndex;
+              _currentIndex = index;
+            });
           },
           backgroundColor: Colors.white,
           elevation: 0,
           type: BottomNavigationBarType.fixed,
 
           // 🎨 COLORS
-          selectedItemColor: const Color(0xFF1E6F5C),
+          selectedItemColor: const Color(0xFF0A3622),
           unselectedItemColor: Colors.grey.shade500,
 
           // 🖋 TEXT STYLE

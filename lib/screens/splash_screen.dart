@@ -41,7 +41,7 @@
 
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'welcome_screen.dart';
+import 'auth_gate.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const WelcomeScreen(), // ✅ FIXED
+          builder: (_) => const AuthGate(), // ✅ FIXED TO USE AUTHGATE
         ),
       );
     });

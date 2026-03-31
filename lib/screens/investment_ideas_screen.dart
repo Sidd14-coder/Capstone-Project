@@ -12,6 +12,7 @@
 
 //       // ===== PREMIUM APP BAR =====
 //       appBar: AppBar(
+        
 //         elevation: 0,
 //         centerTitle: true,
 //         flexibleSpace: Container(
@@ -382,6 +383,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/chatbot_fab.dart';
+import '../widgets/app_drawer.dart';
 
 class InvestmentIdeasScreen extends StatelessWidget {
   const InvestmentIdeasScreen({super.key});
@@ -390,9 +392,11 @@ class InvestmentIdeasScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFE8F5F0),
+      endDrawer: const AppDrawer(),
 
       // ===== PREMIUM APP BAR =====
       appBar: AppBar(
+        
         elevation: 0,
         backgroundColor: const Color(0xFF236C4A),
         title: const Text(
@@ -403,6 +407,14 @@ class InvestmentIdeasScreen extends StatelessWidget {
             letterSpacing: 0.4,
           ),
         ),
+        actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: const ChatbotFab(),
       body: Stack(

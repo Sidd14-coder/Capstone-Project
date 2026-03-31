@@ -71,7 +71,8 @@
 //     return Scaffold(
 //       backgroundColor: const Color(0xFFEAF7EA),
 //       appBar: AppBar(
-//         backgroundColor: const Color(0xFF1E6F5C),
+        
+//         backgroundColor: const Color(0xFF0A3622),
 //         title: const Text('Monthly Report'),
 //         leading: IconButton(
 //           icon: const Icon(Icons.arrow_back),
@@ -222,7 +223,7 @@
 //           padding: const EdgeInsets.symmetric(vertical: 12),
 //           margin: const EdgeInsets.symmetric(horizontal: 4),
 //           decoration: BoxDecoration(
-//             color: active ? const Color(0xFF1E6F5C) : Colors.white,
+//             color: active ? const Color(0xFF0A3622) : Colors.white,
 //             borderRadius: BorderRadius.circular(10),
 //           ),
 //           child: Center(
@@ -336,6 +337,7 @@
 
 //     return Scaffold(
 //       appBar: AppBar(
+        
 //         title: Text(
 //           '${now.month}-${now.year} Monthly Report',
 //         ),
@@ -1881,10 +1883,11 @@
 //     double activeSaving = compareMode ? compSaving : tmSaving;
 
 //     return Scaffold(
-//       backgroundColor: const Color(0xFFF4F8FB),
+//       backgroundColor: const Color(0xFFF9FAFB),
 //       appBar: AppBar(
+        
 //         iconTheme: const IconThemeData(color: Colors.white),
-//         backgroundColor: const Color(0xFF1E6F5C),
+//         backgroundColor: const Color(0xFF0A3622),
 //         elevation: 0,
 //         title: Column(
 //           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1944,7 +1947,7 @@
 //                             child: Container(
 //                               padding: const EdgeInsets.symmetric(vertical: 14),
 //                               decoration: BoxDecoration(
-//                                 color: compareMode ? Colors.transparent : const Color(0xFF1E6F5C),
+//                                 color: compareMode ? Colors.transparent : const Color(0xFF0A3622),
 //                                 borderRadius: BorderRadius.circular(30),
 //                               ),
 //                               child: Center(
@@ -1966,7 +1969,7 @@
 //                             child: Container(
 //                               padding: const EdgeInsets.symmetric(vertical: 14),
 //                               decoration: BoxDecoration(
-//                                 color: compareMode ? const Color(0xFF1E6F5C) : Colors.transparent,
+//                                 color: compareMode ? const Color(0xFF0A3622) : Colors.transparent,
 //                                 borderRadius: BorderRadius.circular(30),
 //                               ),
 //                               child: Center(
@@ -2551,10 +2554,11 @@
 //     double activeSaving = compareMode ? compSaving : tmSaving;
 
 //     return Scaffold(
-//       backgroundColor: const Color(0xFFF4F8FB),
+//       backgroundColor: const Color(0xFFF9FAFB),
 //       appBar: AppBar(
+        
 //         iconTheme: const IconThemeData(color: Colors.white),
-//         backgroundColor: const Color(0xFF1E6F5C),
+//         backgroundColor: const Color(0xFF0A3622),
 //         elevation: 0,
 //         title: Column(
 //           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2614,7 +2618,7 @@
 //                             child: Container(
 //                               padding: const EdgeInsets.symmetric(vertical: 14),
 //                               decoration: BoxDecoration(
-//                                 color: compareMode ? Colors.transparent : const Color(0xFF1E6F5C),
+//                                 color: compareMode ? Colors.transparent : const Color(0xFF0A3622),
 //                                 borderRadius: BorderRadius.circular(30),
 //                               ),
 //                               child: Center(
@@ -2636,7 +2640,7 @@
 //                             child: Container(
 //                               padding: const EdgeInsets.symmetric(vertical: 14),
 //                               decoration: BoxDecoration(
-//                                 color: compareMode ? const Color(0xFF1E6F5C) : Colors.transparent,
+//                                 color: compareMode ? const Color(0xFF0A3622) : Colors.transparent,
 //                                 borderRadius: BorderRadius.circular(30),
 //                               ),
 //                               child: Center(
@@ -3240,10 +3244,11 @@
 //     double activeSaving = compareMode ? compSaving : tmSaving;
 
 //     return Scaffold(
-//       backgroundColor: const Color(0xFFF4F8FB),
+//       backgroundColor: const Color(0xFFF9FAFB),
 //       appBar: AppBar(
+        
 //         iconTheme: const IconThemeData(color: Colors.white),
-//         backgroundColor: const Color(0xFF1E6F5C),
+//         backgroundColor: const Color(0xFF0A3622),
 //         elevation: 0,
 //         title: Column(
 //           crossAxisAlignment: CrossAxisAlignment.start,
@@ -3304,7 +3309,7 @@
 //                             child: Container(
 //                               padding: const EdgeInsets.symmetric(vertical: 14),
 //                               decoration: BoxDecoration(
-//                                 color: compareMode ? Colors.transparent : const Color(0xFF1E6F5C),
+//                                 color: compareMode ? Colors.transparent : const Color(0xFF0A3622),
 //                                 borderRadius: BorderRadius.circular(30),
 //                               ),
 //                               child: Center(
@@ -3326,7 +3331,7 @@
 //                             child: Container(
 //                               padding: const EdgeInsets.symmetric(vertical: 14),
 //                               decoration: BoxDecoration(
-//                                 color: compareMode ? const Color(0xFF1E6F5C) : Colors.transparent,
+//                                 color: compareMode ? const Color(0xFF0A3622) : Colors.transparent,
 //                                 borderRadius: BorderRadius.circular(30),
 //                               ),
 //                               child: Center(
@@ -3961,11 +3966,12 @@
 //     double activeSaving = compareMode ? compSaving : tmSaving;
 
 //     return Scaffold(
-//       backgroundColor: const Color(0xFFF4F8FB),
+//       backgroundColor: const Color(0xFFF9FAFB),
 //       floatingActionButton: const ChatbotFab(),
 //       appBar: AppBar(
+        
 //         iconTheme: const IconThemeData(color: Colors.white),
-//         backgroundColor: const Color(0xFF1E6F5C),
+//         backgroundColor: const Color(0xFF0A3622),
 //         elevation: 0,
 //         title: Column(
 //           crossAxisAlignment: CrossAxisAlignment.start,
@@ -4025,7 +4031,7 @@
 //                             child: Container(
 //                               padding: const EdgeInsets.symmetric(vertical: 14),
 //                               decoration: BoxDecoration(
-//                                 color: compareMode ? Colors.transparent : const Color(0xFF1E6F5C),
+//                                 color: compareMode ? Colors.transparent : const Color(0xFF0A3622),
 //                                 borderRadius: BorderRadius.circular(30),
 //                               ),
 //                               child: Center(
@@ -4047,7 +4053,7 @@
 //                             child: Container(
 //                               padding: const EdgeInsets.symmetric(vertical: 14),
 //                               decoration: BoxDecoration(
-//                                 color: compareMode ? const Color(0xFF1E6F5C) : Colors.transparent,
+//                                 color: compareMode ? const Color(0xFF0A3622) : Colors.transparent,
 //                                 borderRadius: BorderRadius.circular(30),
 //                               ),
 //                               child: Center(
@@ -4609,7 +4615,7 @@
 //               pw.Container(
 //                 padding: const pw.EdgeInsets.all(16),
 //                 decoration: pw.BoxDecoration(
-//                   color: const PdfColor.fromInt(0xFF1E6F5C),
+//                   color: const PdfColor.fromInt(0xFF0A3622),
 //                   borderRadius: pw.BorderRadius.circular(8),
 //                 ),
 //                 child: pw.Row(
@@ -4791,7 +4797,7 @@ import '../widgets/chatbot_fab.dart';
 import '../globals.dart';
 import 'package:pdf/pdf.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import '../widgets/app_drawer.dart';
 class MonthlyData {
   final DateTime date;
   final String label;
@@ -4806,7 +4812,6 @@ class MonthlyData {
     return score.clamp(0, 100);
   }
 }
-
 class MonthlyReportScreen extends StatefulWidget {
   const MonthlyReportScreen({super.key});
 
@@ -4864,10 +4869,12 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
     double activeSaving = compareMode ? compSaving : tmSaving;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F8FB),
+      backgroundColor: const Color(0xFFF9FAFB),
+      endDrawer: const AppDrawer(),
       appBar: AppBar(
+        
         iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: const Color(0xFF1E6F5C),
+        backgroundColor: const Color(0xFF0A3622),
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -4886,13 +4893,19 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
         actions: [
           Center(
             child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
+              padding: const EdgeInsets.only(right: 8.0),
               child: Text(
                 _currentMonth(now.month, now.year),
                 style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
               ),
             ),
-          )
+          ),
+          Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            ),
+          ),
         ],
       ),
       floatingActionButton: const ChatbotFab(),
@@ -4928,7 +4941,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               decoration: BoxDecoration(
-                                color: compareMode ? Colors.transparent : const Color(0xFF1E6F5C),
+                                color: compareMode ? Colors.transparent : const Color(0xFF0A3622),
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               child: Center(
@@ -4950,7 +4963,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               decoration: BoxDecoration(
-                                color: compareMode ? const Color(0xFF1E6F5C) : Colors.transparent,
+                                color: compareMode ? const Color(0xFF0A3622) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               child: Center(
@@ -5512,7 +5525,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
               pw.Container(
                 padding: const pw.EdgeInsets.all(16),
                 decoration: pw.BoxDecoration(
-                  color: const PdfColor.fromInt(0xFF1E6F5C),
+                  color: const PdfColor.fromInt(0xFF0A3622),
                   borderRadius: pw.BorderRadius.circular(8),
                 ),
                 child: pw.Row(

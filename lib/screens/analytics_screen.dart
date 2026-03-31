@@ -231,6 +231,7 @@ import '../data/refresh_totals.dart';
 import 'chatbot_screen.dart';
 import '../widgets/chatbot_fab.dart';
 import 'custom/custom_transactions_screen.dart';
+import '../widgets/app_drawer.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -285,7 +286,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F8FB),
+      backgroundColor: const Color(0xFFF9FAFB),
+      endDrawer: const AppDrawer(),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(76),
         child: AppBar(
@@ -293,9 +295,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           // Changed to true so user can go back to Dashboard
           automaticallyImplyLeading: true, 
           iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: const Color(0xFF1E6F5C),
+          backgroundColor: const Color(0xFF0A3622),
           flexibleSpace: Container(
-            color: const Color(0xFF1E6F5C),
+            color: const Color(0xFF0A3622),
           ),
           title: const Text(
             'Analytics Dashboard',
@@ -306,9 +308,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ),
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              onPressed: () {},
+            Builder(
+              builder: (ctx) => IconButton(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+              ),
             ),
           ],
         ),

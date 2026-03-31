@@ -272,7 +272,7 @@ class _EmiCalculatorScreenState extends State<EmiCalculatorScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("EMI Calculator", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: const Color(0xFF1E6F5C),
+        backgroundColor: const Color(0xFF0A3622),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
@@ -448,7 +448,7 @@ class _EmiCalculatorScreenState extends State<EmiCalculatorScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF1E6F5C), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF0A3622), width: 1.5),
         ),
       ),
     );

@@ -1,11 +1,27 @@
 import 'package:flutter/material.dart';
+import '../widgets/scanning_overlay_screen.dart';
+import '../widgets/wealth_predictor_card.dart';
 import '../globals.dart';
 import '../widgets/debit_credit_chart.dart';
 import 'analytics_screen.dart';
 import '../data/refresh_totals.dart';
 import 'monthly_report_screen.dart'; // ADDED
+import 'category_analytics_screen.dart'; // ADDED
 import 'custom/custom_transactions_screen.dart';
 import 'chatbot_screen.dart';
+import '../widgets/fin_health_card.dart';
+import '../widgets/safe_to_spend_card.dart'; // ADDED 'SAFE TO SPEND' PREDICTOR
+import 'credit_card_screen.dart'; // ADDED CREDIT CARD MANAGER
+import 'health_doctor_screen.dart'; // ADDED AI HEALTH DOCTOR
+import 'tax_assistant_screen.dart'; // ADDED AI TAX ASSISTANT
+import '../widgets/dream_motivation_card.dart'; // ADDED DREAM WIDGET
+import 'dream_engine_screen.dart'; // ADDED DREAM MANAGER
+import '../widgets/app_drawer.dart'; // ADDED UNIVERSAL DRAWER
+
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../services/ocr_service.dart';
+import 'custom/add_transaction_screen.dart';
 
 class DashboardHome extends StatefulWidget {
   const DashboardHome({super.key});
@@ -21,6 +37,22 @@ class _DashboardHomeState extends State<DashboardHome> {
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  Future<void> _scanReceipt() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+    
+    if (pickedFile == null) return;
+
+    if (!mounted) return;
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ScanningOverlayScreen(imageFile: File(pickedFile.path)),
+      ),
+    ).then((_) => _loadData());
   }
 
   /// Initial data load and RefreshIndicator logic
@@ -51,10 +83,60 @@ class _DashboardHomeState extends State<DashboardHome> {
     }
   }
 
+  Widget _buildBleedWarning() {
+    if (currentFilter == FilterType.weekly) return const SizedBox.shrink(); // Only accurate for monthly
+    if (totalCredit <= 0 || globalTotalSpent <= 0) return const SizedBox.shrink();
+    
+    int currentDay = DateTime.now().day;
+    // Prevent day 1 overreactions
+    if (currentDay < 3) return const SizedBox.shrink(); 
+    
+    double dailyVelocity = globalTotalSpent / currentDay;
+    double projectedMonthSpend = dailyVelocity * 30;
+    
+    // If projected spend exceeds 90% of income, trigger alert
+    if (projectedMonthSpend > totalCredit * 0.9) {
+      int daysToRuin = 0;
+      if (dailyVelocity > 0) {
+         daysToRuin = ((totalCredit - globalTotalSpent) / dailyVelocity).floor();
+      }
+      if (daysToRuin < 0) daysToRuin = 0;
+      
+      return Container(
+        margin: const EdgeInsets.only(bottom: 24),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF0F0),
+          border: Border.all(color: Colors.redAccent.withOpacity(0.5), width: 2),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 32),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("⚠️ AI Bleed Warning", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 4),
+                  Text("Your spending velocity is ₹${dailyVelocity.toStringAsFixed(0)}/day. At this rate, you will exhaust your income in $daysToRuin days and severely delay your Dream targets!", style: const TextStyle(color: Colors.black87, fontSize: 14, height: 1.4)),
+                ],
+              ),
+            ),
+          ],
+        )
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F8FB),
+      backgroundColor: const Color(0xFFF9FAFB),
 
       floatingActionButton: Stack(
         children: [
@@ -89,7 +171,7 @@ class _DashboardHomeState extends State<DashboardHome> {
             right: 16,
             child: FloatingActionButton(
               heroTag: "add",
-              backgroundColor: const Color(0xFF1E6F5C),
+              backgroundColor: const Color(0xFF0A3622),
               shape: const CircleBorder(
                 side: BorderSide(color: Colors.white, width: 2),
               ),
@@ -107,31 +189,49 @@ class _DashboardHomeState extends State<DashboardHome> {
         ],
       ),
 
+      endDrawer: const AppDrawer(), // Hooked Universal App Drawer
+
       // ===== HEADER =====
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(76),
         child: AppBar(
           elevation: 0,
           automaticallyImplyLeading: false,
-          backgroundColor: const Color(0xFF1E6F5C),
+          backgroundColor: const Color(0xFF0A3622),
           flexibleSpace: Container(
-            color: const Color(0xFF1E6F5C),
+            color: const Color(0xFF0A3622),
           ),
-          title: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-            child: Row(
-              children: const [
-                Text(
-                  'Overview',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+          title: const Padding(
+            padding: EdgeInsets.only(left: 4, top: 16),
+            child: Text(
+              'Overview',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: IconButton(
+                icon: const Icon(Icons.document_scanner, color: Colors.white, size: 26),
+                onPressed: _scanReceipt,
+                tooltip: "Scan Receipt",
+              ),
+            ),
+            Builder(
+              builder: (ctx) => Padding(
+                padding: const EdgeInsets.only(top: 16, right: 8),
+                child: IconButton(
+                  icon: const Icon(Icons.more_vert, color: Colors.white, size: 26),
+                  onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+                  tooltip: "Menu",
+                ),
+              ),
+            ),
+          ],
         ),
       ),
 
@@ -156,6 +256,21 @@ class _DashboardHomeState extends State<DashboardHome> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ===== PREDICTIVE BLEED WARNING (AI) =====
+                  _buildBleedWarning(),
+
+                  // ===== DREAM MOTIVATION CARD (NEW) =====
+                  const DreamMotivationCard(),
+                  
+                  // ===== TIME-TRAVEL WEALTH PREDICTOR (SHOCK FEATURE) =====
+                  WealthPredictorCard(),
+                  
+                  // ===== FIN HEALTH CARD (NEW) =====
+                  const FinHealthCard(),
+
+                  // ===== SAFE TO SPEND PREDICTOR (NEW) =====
+                  const SafeToSpendCard(),
+
                   // ===== TOTAL SPENT CARD =====
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -300,68 +415,13 @@ class _DashboardHomeState extends State<DashboardHome> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
 
-                  // ===== ANALYTICS BUTTON =====
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E6F5C),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        side: BorderSide.none,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const AnalyticsScreen(),
-                          ),
-                        ).then((_) => _loadData());
-                      },
-                      child: const Text(
-                        'View Detailed Analytics',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                      ),
-                    ),
-                  ),
 
-                  const SizedBox(height: 14),
-
-                  // ===== MONTHLY REPORT BUTTON (ADDED) =====
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E6F5C),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        side: BorderSide.none,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MonthlyReportScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'View Monthly Report',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
+
+
           ),
         ],
       ),

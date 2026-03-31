@@ -7,8 +7,9 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       backgroundColor: const Color(0xFFF4F8FB),
+//       backgroundColor: const Color(0xFFF9FAFB),
 //       appBar: AppBar(
+        
 //         backgroundColor: const Color(0xFF0A33FF),
 //         title: const Text(
 //         'Settings',
@@ -225,6 +226,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:animations/animations.dart';
+import '../globals.dart';
+import '../widgets/app_drawer.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -232,9 +236,11 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F8FB),
+      backgroundColor: const Color(0xFFF9FAFB),
+      endDrawer: const AppDrawer(),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF247155),
+        
+        backgroundColor: const Color(0xFF0A3622),
         title: const Text(
           'Settings',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -245,6 +251,14 @@ class SettingsScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            ),
+          ),
+        ],
       ),
       body: ListView(
         children: [
@@ -294,6 +308,42 @@ class SettingsScreen extends StatelessWidget {
               'All licenses are respected as per open-source guidelines.',
             ),
           ),
+
+          const SizedBox(height: 24),
+
+          _section('AI INTERFACE'),
+          StatefulBuilder(
+            builder: (context, setLocalState) {
+              return SwitchListTile(
+                secondary: const Icon(Icons.whatshot, color: Colors.orange),
+                title: const Text('Savage "Roast" Mode'),
+                subtitle: const Text('AI will be brutally honest, sarcastic, and funny about your bad spending habits.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                activeColor: Colors.orange,
+                value: isSavageModeEnabled,
+                onChanged: (val) {
+                  setLocalState(() {
+                    isSavageModeEnabled = val;
+                  });
+                },
+              );
+            }
+          ),
+          _divider(),
+
+          const SizedBox(height: 24),
+
+          _section('SECURITY'),
+          _item(
+            icon: Icons.security,
+            title: 'Biometric Lock',
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('Biometric lock is active by default for maximum privacy.')),
+              );
+            },
+          ),
+          _divider(),
 
           const SizedBox(height: 24),
 
@@ -431,8 +481,9 @@ class SettingsScreen extends StatelessWidget {
     String title,
     String message,
   ) {
-    showDialog(
+    showModal(
       context: context,
+      configuration: const FadeScaleTransitionConfiguration(),
       builder: (_) => AlertDialog(
         title: Text(title),
         content: SingleChildScrollView(child: Text(message)),

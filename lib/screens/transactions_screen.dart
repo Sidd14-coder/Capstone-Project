@@ -359,8 +359,9 @@
 
 //     return Scaffold(
 //       extendBodyBehindAppBar: true,
-//       backgroundColor: const Color(0xFFF4F8FB),
+//       backgroundColor: const Color(0xFFF9FAFB),
 //       appBar: AppBar(
+        
 //         title: const Text('Transactions'),
 //         centerTitle: true,
 //         backgroundColor: Colors.transparent,
@@ -620,6 +621,8 @@ import '../services/emi_payment_service.dart';
 import '../models/emi_payment_model.dart';
 import 'package:hive/hive.dart';
 import '../widgets/chatbot_fab.dart';
+import '../services/merchant_categorizer.dart'; // ADDED MERGHANT CATEGORIZER
+import '../widgets/app_drawer.dart';
 
 /* =========================================================
    TRANSACTION PARSER (STRICT – NO FALSE POSITIVES)
@@ -974,12 +977,24 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F8FB),
+      backgroundColor: const Color(0xFFF9FAFB),
+      endDrawer: const AppDrawer(),
       appBar: AppBar(
+        
         title: const Text('Transaction', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-        backgroundColor: const Color(0xFF1E6F5C),
+        backgroundColor: const Color(0xFF0A3622),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {
+                Scaffold.of(ctx).openEndDrawer();
+              },
+            ),
+          )
+        ],
       ),
       floatingActionButton: const ChatbotFab(),
       body: Stack(
@@ -1006,7 +1021,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           children: [
                             const Text(
                               "Accounts",
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E6F5C)),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0A3622)),
                             ),
                             const SizedBox(height: 8),
                             Container(
@@ -1114,7 +1129,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                     month,
                                     style: const TextStyle(
                                       fontSize: 15,
-                                      color: Color(0xFF1E6F5C),
+                                      color: Color(0xFF0A3622),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -1129,68 +1144,155 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                   final type = parsed.isDebit ? 'Debit' : 'Credit';
                                   final formattedDate = '${date.day}/${date.month}/${date.year}';
 
+                                  final cleanName = MerchantCategorizer.getCleanName(msg.body ?? '');
+                                  final catData = MerchantCategorizer.getCategoryAndIcon(msg.body ?? '', isDebit: parsed.isDebit);
+                                  final catName = catData['category'];
+                                  final IconData catIcon = catData['icon'];
+                                  final Color catColor = catData['color'];
+
                                   return Container(
-                                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(20),
                                       boxShadow: [
-                                        BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2)),
+                                        BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
                                       ]
                                     ),
                                     child: Material(
                                       color: Colors.transparent,
                                       child: InkWell(
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(20),
                                         onTap: () {
                                           showModalBottomSheet(
                                             context: context,
                                             isScrollControlled: true,
                                             shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                                              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                                             ),
                                             builder: (_) => SafeArea(
                                               child: DraggableScrollableSheet(
                                                 expand: false,
                                                 builder: (_, controller) => SingleChildScrollView(
                                                   controller: controller,
-                                                  padding: const EdgeInsets.all(20),
+                                                  padding: const EdgeInsets.all(24),
                                                   child: Column(
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
-                                                      Text(parsed.merchant,
-                                                          style: const TextStyle(
-                                                              fontSize: 18, fontWeight: FontWeight.bold)),
+                                                      Center(
+                                                        child: CircleAvatar(
+                                                          backgroundColor: catColor.withOpacity(0.15),
+                                                          radius: 30,
+                                                          child: Icon(catIcon, color: catColor, size: 30),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 16),
+                                                      Center(
+                                                        child: Text(cleanName,
+                                                            textAlign: TextAlign.center,
+                                                            style: const TextStyle(
+                                                                fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E002B))),
+                                                      ),
                                                       const SizedBox(height: 8),
 
-                                                      Text(type,
-                                                          style: TextStyle(
-                                                              color: color, fontWeight: FontWeight.bold)),
-                                                      const SizedBox(height: 8),
+                                                      Center(
+                                                        child: Container(
+                                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                          decoration: BoxDecoration(
+                                                            color: catColor.withOpacity(0.1),
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          child: Text(catName, style: TextStyle(color: catColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 24),
 
                                                       Text(
                                                         'Amount: $sign ₹${parsed.amount.toStringAsFixed(2)}',
                                                         style: TextStyle(
                                                           color: color,
-                                                          fontSize: 16,
-                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 18,
+                                                          fontWeight: FontWeight.w900,
                                                         ),
                                                       ),
                                                       const SizedBox(height: 8),
 
-                                                      Text('Date: $formattedDate',
-                                                          style: const TextStyle(color: Colors.grey)),
+                                                      Text('Type & Date: $type • $formattedDate',
+                                                          style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
 
-                                                      const Divider(height: 24),
+                                                      const Divider(height: 32),
 
-                                                      const Text('Transaction Message',
+                                                      const Text('Bank SMS Detail',
                                                           style: TextStyle(
                                                               fontWeight: FontWeight.bold, fontSize: 14)),
-                                                      const SizedBox(height: 6),
+                                                      const SizedBox(height: 8),
 
                                                       Text(msg.body ?? '',
-                                                          style: const TextStyle(fontSize: 13)),
+                                                          style: const TextStyle(fontSize: 13, height: 1.4, color: Colors.black54)),
 
+                                                      const SizedBox(height: 30),
+
+                                                      // ================= ML CATEGORY TRAINING WIDGET =================
+                                                      Container(
+                                                        padding: const EdgeInsets.all(16),
+                                                        decoration: BoxDecoration(
+                                                          color: const Color(0xFFF9FAFB),
+                                                          borderRadius: BorderRadius.circular(16),
+                                                          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                                                        ),
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Row(
+                                                              children: [
+                                                                const Icon(Icons.auto_awesome, color: Color(0xFFE8B923), size: 18),
+                                                                const SizedBox(width: 8),
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    'Train AI: Categorize "$cleanName"', 
+                                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E002B)),
+                                                                    maxLines: 2,
+                                                                    overflow: TextOverflow.ellipsis,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            const SizedBox(height: 6),
+                                                            const Text('If this transaction is in the wrong category, fix it here. The app will remember it forever.', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                                                            const SizedBox(height: 12),
+                                                            
+                                                            DropdownButtonFormField<String>(
+                                                              value: MerchantCategorizer.predefinedCategories.containsKey(catName) ? catName : null,
+                                                              hint: const Text("Select new Category"),
+                                                              decoration: InputDecoration(
+                                                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                              ),
+                                                              items: MerchantCategorizer.predefinedCategories.keys.map((String cName) {
+                                                                return DropdownMenuItem<String>(
+                                                                  value: cName,
+                                                                  child: Text(cName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                                                );
+                                                              }).toList(),
+                                                              onChanged: (String? newValue) async {
+                                                                if (newValue != null) {
+                                                                  await MerchantCategorizer.learnTransactionCategory(msg.body ?? '', newValue);
+                                                                  if (context.mounted) {
+                                                                    Navigator.pop(context); // Close bottom sheet
+                                                                    setState(() {}); // Trigger refresh on entire transactions list
+                                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                                      SnackBar(
+                                                                        content: Text('Saved category "$newValue" for this transaction!'),
+                                                                        backgroundColor: Colors.green,
+                                                                      ),
+                                                                    );
+                                                                  }
+                                                                }
+                                                              },
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
                                                       const SizedBox(height: 40),
                                                     ],
                                                   ),
@@ -1203,30 +1305,44 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                                           child: Row(
                                             children: [
-                                              CircleAvatar(
-                                                backgroundColor: bgColor,
-                                                radius: 20,
-                                                child: Icon(
-                                                  parsed.isDebit ? Icons.arrow_upward : Icons.arrow_downward,
-                                                  color: color,
-                                                  size: 20,
+                                              // SMART CATEGORY ICON
+                                              Container(
+                                                padding: const EdgeInsets.all(12),
+                                                decoration: BoxDecoration(
+                                                  color: catColor.withOpacity(0.15),
+                                                  borderRadius: BorderRadius.circular(14),
                                                 ),
+                                                child: Icon(catIcon, color: catColor, size: 24),
                                               ),
                                               const SizedBox(width: 14),
                                               Expanded(
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
+                                                    // CLEAN MERCHANT NAME
                                                     Text(
-                                                      parsed.merchant.toUpperCase(),
-                                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                                                      cleanName,
+                                                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF1E002B)),
                                                       maxLines: 1,
                                                       overflow: TextOverflow.ellipsis,
                                                     ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      '$type • $formattedDate',
-                                                      style: TextStyle(color: color.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.w600),
+                                                    const SizedBox(height: 6),
+                                                    Row(
+                                                      children: [
+                                                        Container(
+                                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                          decoration: BoxDecoration(
+                                                            color: catColor.withOpacity(0.1),
+                                                            borderRadius: BorderRadius.circular(4),
+                                                          ),
+                                                          child: Text(catName, style: TextStyle(color: catColor, fontSize: 10, fontWeight: FontWeight.bold)),
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                        Text(
+                                                          '• $formattedDate',
+                                                          style: TextStyle(color: Colors.grey.shade600, fontSize: 11, fontWeight: FontWeight.w600),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ],
                                                 ),

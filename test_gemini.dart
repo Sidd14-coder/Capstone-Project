@@ -25,3 +25,23 @@ void main() async {
     print("ERROR: ${response.body}");
   }
 }
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+Future<void> main() async {
+  String apiKey = "AIzaSyDNq98N83RwBI2MaO1dbUVpDRhiqGox2_o";
+  String endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey";
+  List<Map<String, dynamic>> contents = [
+    {
+      "role": "user",
+      "parts": [{"text": "System Instructions:\nYou are a helpful bot.\n\nHere is the user's question:\nHello"}]
+    }
+  ];
+  final response = await http.post(
+    Uri.parse(endpoint),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({"contents": contents})
+  );
+  print(response.statusCode);
+  print(response.body);
+}

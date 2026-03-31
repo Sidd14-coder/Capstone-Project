@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-class DebitCreditBarChart extends StatelessWidget {
+class DebitCreditBarChart extends StatefulWidget {
   final double totalDebit;
   final double totalCredit;
 
@@ -12,9 +12,24 @@ class DebitCreditBarChart extends StatelessWidget {
   });
 
   @override
+  State<DebitCreditBarChart> createState() => _DebitCreditBarChartState();
+}
+
+class _DebitCreditBarChartState extends State<DebitCreditBarChart> {
+  bool _isLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted) setState(() => _isLoaded = true);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final double rawMax =
-        totalDebit > totalCredit ? totalDebit : totalCredit;
+        widget.totalDebit > widget.totalCredit ? widget.totalDebit : widget.totalCredit;
     final double maxY = rawMax == 0 ? 10000 : rawMax * 1.3;
 
     final double interval = maxY <= 10000
@@ -136,7 +151,7 @@ class DebitCreditBarChart extends StatelessWidget {
               x: 0,
               barRods: [
                 BarChartRodData(
-                  toY: totalDebit,
+                  toY: _isLoaded ? widget.totalDebit : 0,
                   width: 50,
                   color: const Color(0xFFFF1818),
                   borderRadius: BorderRadius.zero,
@@ -152,7 +167,7 @@ class DebitCreditBarChart extends StatelessWidget {
               x: 1,
               barRods: [
                 BarChartRodData(
-                  toY: totalCredit,
+                  toY: _isLoaded ? widget.totalCredit : 0,
                   width: 50,
                   color: const Color(0xFF00E600),
                   borderRadius: BorderRadius.zero,

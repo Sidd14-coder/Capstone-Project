@@ -335,6 +335,11 @@
 import 'package:telephony/telephony.dart';
 import '../../globals.dart';
 import '../../models/transaction_model.dart';
+import '../services/credit_card_service.dart';
+
+import '../../models/transaction_model.dart';
+import '../services/credit_card_service.dart';
+import '../services/notification_service.dart';
 
 class BankData {
   final String bankName;
@@ -370,6 +375,7 @@ Future<void> refreshTotals() async {
     final body = msg.body ?? '';
     final ts = msg.date;
     if (ts == null) continue;
+    if (_isSpam(body)) continue;
 
     final date = DateTime.fromMillisecondsSinceEpoch(ts);
 
@@ -421,6 +427,7 @@ Future<void> refreshTotals() async {
     final body = msg.body ?? '';
     final ts = msg.date;
     if (ts == null) continue;
+    if (_isSpam(body)) continue;
 
     final d = DateTime.fromMillisecondsSinceEpoch(ts);
 
@@ -446,6 +453,9 @@ Future<void> refreshTotals() async {
       if (acc != null && !bankAccounts.containsKey(bankName)) {
         bankAccounts[bankName] = acc;
       }
+      
+      // ✅ ADDED: PROCESS CREDIT CARD STATEMENTS
+      CreditCardService.processSmsForCreditCard(body, d, bankName);
     }
 
     bool inRange;
@@ -479,6 +489,9 @@ Future<void> refreshTotals() async {
   totalDebit = debitSum;
   totalCredit = creditSum;
   globalTotalSpent = debitSum;
+
+  // Refresh Smart Reminders based on updated data
+  NotificationService().scheduleSmartReminders();
 }
 
 /* ---------------- HELPER FUNCTIONS ---------------- */
@@ -590,4 +603,25 @@ String extractBankNameFromSMS(String body) {
   if (b.contains('PAYTM')) return 'Paytm Payments Bank';
 
   return 'Unknown Bank';
+}
+
+bool _isSpam(String body) {
+  final b = body.toLowerCase();
+  
+  // Specific promotional/spam keywords that falsely trigger
+  final spamKeywords = [
+    'recharge now',
+    'play rummy',
+    'claim now',
+    'lottery',
+    'win cash',
+    'data pack',
+    'validity expires'
+  ];
+  
+  for (var word in spamKeywords) {
+    if (b.contains(word)) return true;
+  }
+  
+  return false;
 }

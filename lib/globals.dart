@@ -133,3 +133,6 @@ List<TransactionModel> allTransactions = [];
 
 // Chatbot session memory
 List<Map<String, String>> globalChatMessages = [];
+
+// ================= AI SETTINGS =================
+bool isSavageModeEnabled = false;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/chatbot_fab.dart';
+import '../widgets/app_drawer.dart';
 
 class SavingIdeasScreen extends StatelessWidget {
   const SavingIdeasScreen({super.key});
@@ -8,9 +9,11 @@ class SavingIdeasScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
+      endDrawer: const AppDrawer(),
 
       // ===== PREMIUM APP BAR =====
       appBar: AppBar(
+        
         elevation: 0,
         centerTitle: true,
         flexibleSpace: Container(
@@ -34,12 +37,20 @@ class SavingIdeasScreen extends StatelessWidget {
               'Saving Ideas',
               style: TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.4,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
+        actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: const ChatbotFab(),
       body: Stack(

@@ -128,6 +128,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../widgets/app_drawer.dart';
 
 class FollowUsScreen extends StatelessWidget {
   const FollowUsScreen({super.key});
@@ -142,16 +143,26 @@ class FollowUsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFCFFBFF),
+      backgroundColor: const Color(0xFFF9FAFB),
+      endDrawer: const AppDrawer(),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF247155),
+        backgroundColor: const Color(0xFF0A3622),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Follow us', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            ),
+          ),
+        ],
       ),
 
       body: Stack(

@@ -11,7 +11,7 @@
 //       backgroundColor: const Color(0xFFBFD8C3), // light green bg
 
 //       appBar: AppBar(
-//         backgroundColor: const Color(0xFF1E6F5C),
+//         backgroundColor: const Color(0xFF0A3622),
 //         title: const Text("Custom Transactions"),
 //       ),
 
@@ -121,7 +121,7 @@ class CustomTransactionsScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFE9F5E9), // lighter pastel green
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E6F5C),
+        backgroundColor: const Color(0xFF0A3622),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(

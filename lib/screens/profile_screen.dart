@@ -44,7 +44,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       backgroundColor: const Color(0xFFF4F8FB),
+//       backgroundColor: const Color(0xFFF9FAFB),
 //       endDrawer: _profileDrawer(context),
 //       drawerEnableOpenDragGesture: false,
 
@@ -770,7 +770,7 @@
 //               width: double.infinity,
 //               padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
 //               decoration: const BoxDecoration(
-//                 color: Color(0xFF1E6F5C),
+//                 color: Color(0xFF0A3622),
 //                 borderRadius:
 //                     BorderRadius.vertical(bottom: Radius.circular(34)),
 //               ),
@@ -1363,7 +1363,7 @@
 //     return Padding(
 //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
 //       child: Text(cleanTitle,
-//           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E6F5C))),
+//           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0A3622))),
 //     );
 //   }
 
@@ -1472,7 +1472,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       backgroundColor: const Color(0xFFF4F8FB),
+//       backgroundColor: const Color(0xFFF9FAFB),
 //       endDrawer: _profileDrawer(context),
 //       drawerEnableOpenDragGesture: false,
 
@@ -2138,6 +2138,7 @@
 
 
 import 'package:flutter/material.dart';
+import '../widgets/app_drawer.dart'; // 🔥 Universal Drawer Injected
 import '../globals.dart';
 import '../services/google_auth_service.dart';
 import 'welcome_screen.dart';
@@ -2185,7 +2186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFFFEE), // Very light green bg
-      endDrawer: _profileDrawer(context),
+      endDrawer: const AppDrawer(), // 🔥 Hooked Universal App Drawer
       drawerEnableOpenDragGesture: false,
       floatingActionButton: const ChatbotFab(),
 
@@ -2199,7 +2200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
               decoration: const BoxDecoration(
-                color: Color(0xFF1E6F5C),
+                color: Color(0xFF0A3622),
                 borderRadius:
                     BorderRadius.vertical(bottom: Radius.circular(34)),
               ),
@@ -2270,6 +2271,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
+
+            const SizedBox(height: 26),
+            _sectionTitle('🏆 Achievements & Badges'),
+            _badgesSection(),
 
             const SizedBox(height: 26),
             _sectionTitle('🏦 Bank Accounts'),
@@ -2483,6 +2488,136 @@ Widget _financeCards() {
 );
 }
 
+  Widget _badgesSection() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: [
+          _premiumBadge(
+            title: 'Saver 🥉',
+            desc: 'Kept spending below income',
+            unlocked: totalCredit > totalDebit,
+            gradient: const [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+          ),
+          const SizedBox(width: 16),
+          _premiumBadge(
+            title: 'Investor 🚀',
+            desc: 'Has active savings',
+            unlocked: (totalCredit - totalDebit) > 5000,
+            gradient: const [Color(0xFFF2994A), Color(0xFFF2C94C)],
+          ),
+          const SizedBox(width: 16),
+          _premiumBadge(
+            title: 'Elite 💎',
+            desc: 'High Financial Health',
+            unlocked: totalCredit > 0 && (totalDebit/totalCredit) < 0.5,
+            gradient: const [Color(0xFF1CB5E0), Color(0xFF000851)],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _premiumBadge({required String title, required String desc, required bool unlocked, required List<Color> gradient}) {
+    return Container(
+      width: 150,
+      height: 140,
+      decoration: BoxDecoration(
+        gradient: unlocked ? LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight) : null,
+        color: unlocked ? null : Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: unlocked
+            ? [
+                BoxShadow(
+                  color: gradient.last.withOpacity(0.4),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                )
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
+      ),
+      child: Stack(
+        children: [
+          // Subtle shimmer overlay
+          if (unlocked)
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.15),
+                ),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: unlocked ? Colors.white.withOpacity(0.2) : Colors.grey.shade300,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        unlocked ? Icons.emoji_events_rounded : Icons.lock_outline_rounded,
+                        color: unlocked ? Colors.white : Colors.grey,
+                        size: 20,
+                      ),
+                    ),
+                    if (unlocked)
+                      const Icon(Icons.check_circle, color: Colors.white, size: 18)
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                        color: unlocked ? Colors.white : Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      desc,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: unlocked ? Colors.white.withOpacity(0.85) : Colors.grey.shade500,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _miniCard(String title, double value, Color color) {
     return Expanded(
@@ -2670,119 +2805,8 @@ Widget _financeCards() {
     );
   }
 
-  // ===== DRAWER =====
-  Widget _profileDrawer(BuildContext context) {
-    return Drawer(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 50, 20, 24),
-            decoration: const BoxDecoration(
-              color: Color(0xFF1E6F5C),
-              borderRadius:
-                  BorderRadius.only(topRight: Radius.circular(24)),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: Colors.amber,
-                  child: Text(
-                    loggedInUserName.isNotEmpty
-                        ? loggedInUserName[0].toUpperCase()
-                        : 'A',
-                    style: const TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      loggedInUserName.isNotEmpty
-                          ? loggedInUserName
-                          : 'User',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      loggedInUserEmail.isNotEmpty
-                          ? loggedInUserEmail
-                          : 'user@email.com',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+  // Extracted to universal AppDrawer
 
-          _drawerTile(Icons.person, 'Invite friends', () {
-            Navigator.pop(context);
-            Share.share(
-                'Hey! I am using BudgetBee to track my expenses.');
-          }),
-
-          const Divider(height: 1),
-
-          _drawerTile(Icons.favorite, 'Follow us', () {
-            Navigator.pop(context);
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const FollowUsScreen()));
-          }, Colors.red),
-
-          const Divider(height: 1),
-
-          _drawerTile(Icons.settings, 'Setting', () {
-            Navigator.pop(context);
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()));
-          }, Colors.blue),
-
-          const Divider(height: 1),
-
-          _drawerTile(Icons.logout, 'Log out', () async {
-            Navigator.pop(context);
-            await GoogleAuthService.signOut();
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-              (_) => false,
-            );
-          }, Colors.orange),
-        ],
-      ),
-    );
-  }
-
-  Widget _drawerTile(
-    IconData icon,
-    String text,
-    VoidCallback onTap, [
-    Color iconColor = Colors.black87,
-  ]) {
-    return ListTile(
-      leading: Icon(icon, color: iconColor),
-      title: Text(text),
-      onTap: onTap,
-    );
-  }
 
   static Widget _sectionTitle(String title) {
     // String mapping to remove emojis
@@ -2792,7 +2816,7 @@ Widget _financeCards() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(cleanTitle,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E6F5C))),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0A3622))),
     );
   }
 

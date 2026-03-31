@@ -152,8 +152,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFE8F2EC),
       appBar: AppBar(
+        
         title: const Text("BudgetBee Assistant", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white)),
-        backgroundColor: const Color(0xFF1E6F5C),
+        backgroundColor: const Color(0xFF0A3622),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -196,7 +197,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: msg["role"] == "user"
-                              ? const Color(0xFF1E6F5C)
+                              ? const Color(0xFF0A3622)
                               : Colors.white,
                           borderRadius: BorderRadius.only(
                             topLeft: const Radius.circular(16),
@@ -234,8 +235,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                     styleSheet: MarkdownStyleSheet(
                                       p: const TextStyle(fontSize: 16, height: 1.4, color: Colors.black87),
                                       a: const TextStyle(fontSize: 16, color: Colors.blue, decoration: TextDecoration.underline),
-                                      strong: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E6F5C)),
-                                      listBullet: const TextStyle(fontSize: 18, color: Color(0xFF1E6F5C)),
+                                      strong: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0A3622)),
+                                      listBullet: const TextStyle(fontSize: 18, color: Color(0xFF0A3622)),
                                     ),
                                   ),
                           ],
@@ -280,7 +281,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                             Container(
                               margin: const EdgeInsets.all(4),
                               decoration: const BoxDecoration(
-                                color: Color(0xFF1E6F5C),
+                                color: Color(0xFF0A3622),
                                 shape: BoxShape.circle,
                               ),
                               child: IconButton(

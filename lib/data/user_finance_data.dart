@@ -1,4 +1,6 @@
 import '../globals.dart';
+import '../services/gamification_service.dart';
+import '../services/merchant_categorizer.dart';
 
 Future<Map<String, dynamic>> getUserFinanceData() async {
   double balance = totalCredit - totalDebit;
@@ -40,5 +42,9 @@ Future<Map<String, dynamic>> getUserFinanceData() async {
     "savings": savings,
     "transactions": top5.isEmpty ? "No recent transactions found." : top5,
     "bank_details": bankInfoLines.isEmpty ? "No linked bank accounts." : bankInfoLines.join("\n\n"),
+    "gamification_level": GamificationService.currentLevel,
+    "gamification_xp": GamificationService.xp,
+    "gamification_streak": GamificationService.currentStreak,
+    "gamification_badges": GamificationService.unlockedBadges.join(", "),
   };
 }

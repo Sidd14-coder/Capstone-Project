@@ -239,7 +239,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-class DebitCreditPieChart extends StatelessWidget {
+class DebitCreditPieChart extends StatefulWidget {
   final double debit;
   final double credit;
 
@@ -250,8 +250,23 @@ class DebitCreditPieChart extends StatelessWidget {
   });
 
   @override
+  State<DebitCreditPieChart> createState() => _DebitCreditPieChartState();
+}
+
+class _DebitCreditPieChartState extends State<DebitCreditPieChart> {
+  bool _isLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) setState(() => _isLoaded = true);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final double total = debit + credit;
+    final double total = widget.debit + widget.credit;
 
     if (total == 0) {
       return const Center(
@@ -262,10 +277,10 @@ class DebitCreditPieChart extends StatelessWidget {
       );
     }
 
-    final bool healthy = credit >= debit;
-    final double netBalance = credit - debit;
-    final double debitPercent = (debit / total) * 100;
-    final double creditPercent = (credit / total) * 100;
+    final bool healthy = widget.credit >= widget.debit;
+    final double netBalance = widget.credit - widget.debit;
+    final double debitPercent = (widget.debit / total) * 100;
+    final double creditPercent = (widget.credit / total) * 100;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -316,15 +331,15 @@ class DebitCreditPieChart extends StatelessWidget {
                   centerSpaceRadius: 48, // 🔽 reduced
                   sections: [
                     PieChartSectionData(
-                      value: debit,
+                      value: _isLoaded ? widget.debit : 0.01,
                       showTitle: false,
-                      radius: 52, // 🔽 reduced
+                      radius: _isLoaded ? 52 : 0, 
                       color: const Color(0xFFEC4A4A),
                     ),
                     PieChartSectionData(
-                      value: credit,
+                      value: _isLoaded ? widget.credit : 0.01,
                       showTitle: false,
-                      radius: 52,
+                      radius: _isLoaded ? 52 : 0,
                       color: const Color(0xFF6DE855),
                     ),
                   ],
@@ -364,14 +379,14 @@ class DebitCreditPieChart extends StatelessWidget {
           children: [
             _CompactStat(
               label: 'Spent',
-              amount: debit,
+              amount: widget.debit,
               percent: debitPercent,
               color: const Color(0xFFFE5151),
             ),
             const SizedBox(width: 8),
             _CompactStat(
-              label: 'Recieved',
-              amount: credit,
+              label: 'Received',
+              amount: widget.credit,
               percent: creditPercent,
               color: const Color(0xFF65F762),
             ),

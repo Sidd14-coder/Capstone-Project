@@ -104,7 +104,7 @@
 //     return Scaffold(
 //       backgroundColor: const Color(0xFFE8F5E9), // Light green background
 //       appBar: AppBar(
-//         backgroundColor: const Color(0xFF1E6F5C), // Dark green theme
+//         backgroundColor: const Color(0xFF0A3622), // Dark green theme
 //         elevation: 0,
 //         iconTheme: const IconThemeData(color: Colors.white),
 //         title: const Text(
@@ -170,7 +170,7 @@
 //                     style: TextStyle(
 //                       fontSize: 16,
 //                       fontWeight: FontWeight.bold,
-//                       color: Color(0xFF1E6F5C),
+//                       color: Color(0xFF0A3622),
 //                     ),
 //                   ),
 //                   TextField(
@@ -182,7 +182,7 @@
 //                         borderSide: BorderSide(color: Colors.grey),
 //                       ),
 //                       focusedBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(color: Color(0xFF1E6F5C), width: 2),
+//                         borderSide: BorderSide(color: Color(0xFF0A3622), width: 2),
 //                       ),
 //                       isDense: true,
 //                       contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -196,7 +196,7 @@
 //                     style: TextStyle(
 //                       fontSize: 16,
 //                       fontWeight: FontWeight.bold,
-//                       color: Color(0xFF1E6F5C),
+//                       color: Color(0xFF0A3622),
 //                     ),
 //                   ),
 //                   InkWell(
@@ -211,7 +211,7 @@
 //                         children: [
 //                           Icon(
 //                             categoryIcons[category] ?? Icons.category,
-//                             color: const Color(0xFF1E6F5C),
+//                             color: const Color(0xFF0A3622),
 //                             size: 20,
 //                           ),
 //                           const SizedBox(width: 8),
@@ -239,7 +239,7 @@
 //                               "Today ${TimeOfDay.now().format(context)}",
 //                               style: const TextStyle(
 //                                 fontSize: 13,
-//                                 color: Color(0xFF1E6F5C),
+//                                 color: Color(0xFF0A3622),
 //                                 fontWeight: FontWeight.bold,
 //                               ),
 //                             ),
@@ -262,7 +262,7 @@
 //                               borderSide: BorderSide(color: Colors.grey),
 //                             ),
 //                             focusedBorder: UnderlineInputBorder(
-//                               borderSide: BorderSide(color: Color(0xFF1E6F5C), width: 2),
+//                               borderSide: BorderSide(color: Color(0xFF0A3622), width: 2),
 //                             ),
 //                             isDense: true,
 //                             contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -282,7 +282,7 @@
 //             height: 60,
 //             child: ElevatedButton(
 //               style: ElevatedButton.styleFrom(
-//                 backgroundColor: const Color(0xFF1E6F5C),
+//                 backgroundColor: const Color(0xFF0A3622),
 //                 shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
 //               ),
 //               onPressed: saveTransaction,
@@ -307,7 +307,16 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key});
+  final String? initialAmount;
+  final String? initialDesc;
+  final String? initialCategory;
+
+  const AddTransactionScreen({
+    super.key,
+    this.initialAmount,
+    this.initialDesc,
+    this.initialCategory,
+  });
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -321,6 +330,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String amount = "";
   TextEditingController desc = TextEditingController();
   TextEditingController amountController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialAmount != null) amountController.text = widget.initialAmount!;
+    if (widget.initialDesc != null) desc.text = widget.initialDesc!;
+    if (widget.initialCategory != null) category = widget.initialCategory!;
+  }
 
   List<String> categories = [
     "Food","Health","Grocery","Bills","Education",
@@ -408,7 +425,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFE8F5E9), // Light green background
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E6F5C), // Dark green theme
+        backgroundColor: const Color(0xFF0A3622), // Dark green theme
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
@@ -474,7 +491,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E6F5C),
+                      color: Color(0xFF0A3622),
                     ),
                   ),
                   TextField(
@@ -486,7 +503,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         borderSide: BorderSide(color: Colors.grey),
                       ),
                       focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF1E6F5C), width: 2),
+                        borderSide: BorderSide(color: Color(0xFF0A3622), width: 2),
                       ),
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -500,7 +517,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E6F5C),
+                      color: Color(0xFF0A3622),
                     ),
                   ),
                   InkWell(
@@ -515,7 +532,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         children: [
                           Icon(
                             categoryIcons[category] ?? Icons.category,
-                            color: const Color(0xFF1E6F5C),
+                            color: const Color(0xFF0A3622),
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -543,7 +560,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               "Today ${TimeOfDay.now().format(context)}",
                               style: const TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF1E6F5C),
+                                color: Color(0xFF0A3622),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -566,7 +583,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               borderSide: BorderSide(color: Colors.grey),
                             ),
                             focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFF1E6F5C), width: 2),
+                              borderSide: BorderSide(color: Color(0xFF0A3622), width: 2),
                             ),
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -586,7 +603,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             height: 60,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E6F5C),
+                backgroundColor: const Color(0xFF0A3622),
                 shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
               ),
               onPressed: saveTransaction,

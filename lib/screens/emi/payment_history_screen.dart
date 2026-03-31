@@ -136,7 +136,7 @@ class PaymentHistoryScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Payment History", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: const Color(0xFF1E6F5C),
+        backgroundColor: const Color(0xFF0A3622),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
@@ -180,7 +180,7 @@ class PaymentHistoryScreen extends StatelessWidget {
                                 ),
                                 Text(
                                   "₹${payment['amount']}",
-                                  style: const TextStyle(color: Color(0xFF1E6F5C), fontWeight: FontWeight.w900, fontSize: 16),
+                                  style: const TextStyle(color: Color(0xFF0A3622), fontWeight: FontWeight.w900, fontSize: 16),
                                 )
                               ],
                             ),

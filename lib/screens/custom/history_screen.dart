@@ -197,7 +197,8 @@
 //     return Scaffold(
 //       backgroundColor: const Color(0xFFE8F5E9),
 //       appBar: AppBar(
-//         backgroundColor: const Color(0xFF1E6F5C),
+        
+//         backgroundColor: const Color(0xFF0A3622),
 //         elevation: 0,
 //         iconTheme: const IconThemeData(color: Colors.white),
 //         title: const Text(
@@ -367,6 +368,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:animations/animations.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -467,8 +469,9 @@ class _HistoryScreenState extends State<HistoryScreen>
     TextEditingController noteController =
         TextEditingController(text: e['note']);
 
-    showDialog(
+    showModal(
       context: context,
+      configuration: const FadeScaleTransitionConfiguration(),
       builder: (_) {
         return AlertDialog(
           title: const Text("Edit Transaction"),
@@ -563,7 +566,8 @@ class _HistoryScreenState extends State<HistoryScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFE8F5E9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E6F5C),
+        
+        backgroundColor: const Color(0xFF0A3622),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(

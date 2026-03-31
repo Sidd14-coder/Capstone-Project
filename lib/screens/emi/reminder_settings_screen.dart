@@ -268,7 +268,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Reminder Settings", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: const Color(0xFF1E6F5C),
+        backgroundColor: const Color(0xFF0A3622),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
@@ -311,7 +311,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      Text("₹${e['emi']}", style: const TextStyle(color: Color(0xFF1E6F5C), fontSize: 18, fontWeight: FontWeight.w900)),
+                                      Text("₹${e['emi']}", style: const TextStyle(color: Color(0xFF0A3622), fontSize: 18, fontWeight: FontWeight.w900)),
                                       const Text("/month", style: TextStyle(color: Colors.grey, fontSize: 14)),
                                     ],
                                   ),
